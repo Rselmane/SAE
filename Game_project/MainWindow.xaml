@@ -5,8 +5,12 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Game_project"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="Lumi-Labyrinthe" Height="450" Width="800">
     <Grid>
+        <Grid>
+            <Canvas x:Name="LabyrinthCanvas" Width="300" Height="300">
+            </Canvas>
 
+        </Grid>
     </Grid>
 </Window>
