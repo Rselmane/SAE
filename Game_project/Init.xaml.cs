@@ -26,9 +26,7 @@ namespace Game_project
 
         private void btJouer_Click(object sender, RoutedEventArgs e)
         {
-            MainWindow main = new MainWindow();
-            main.Show();
-            this.Close();
+            DialogResult = true;
         }
     }
 }
