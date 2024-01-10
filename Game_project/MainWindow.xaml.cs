@@ -89,13 +89,90 @@ namespace Game_project
 
         private void CreationChemin(int[,] mat)
         {
+            bool fin = false;
+            for (int i = 0; i < mat.GetLength(0); i++)
+            {
+                for (int j = 0; j < mat.GetLength(1); j++)
+                {
+                    if (mat[i, j] == 4)
+                    {
+                        ChoixChemin(mat, ref i, ref j, fin);
+                    }
 
-            
+                    for (int h = 1; h < 15; h++)
+                    {
+                        if (mat[i, j] == 3)
+                        {
+                            break;
+                        }
+                        else if (mat[i,j]==1)
+                        {
+                            ChoixChemin(mat, ref i, ref j, fin);
+                        }
+                        if (h == 9)
+                        {
+                            fin = true;
+                            ChoixChemin(mat, ref i, ref j, fin);
+                        }
+                    }
+                }
+            }
         }
 
-        private static void ChoixChemin(int[,] mat)
+        private void ChoixChemin(int[,] mat, ref int x , ref int y, bool fin)
         {
-
+            randY = 0;
+            randX = 0;
+            int var;
+            if (fin)
+            {
+                var = 3;
+            }
+            else
+            {
+                var = 1;
+            }
+            while (mat[x + randX, y + randY] != 0)
+            {
+                randX = rand.Next(0, 4);
+                switch (randX)
+                {
+                    case 0:
+                        randX = 1;
+                        randY = 0;
+                        break;
+                    case 1:
+                        randX = -1;
+                        randY = 0;
+                        break;
+                    case 2:
+                        randX = 0;
+                        randY = 1;
+                        break;
+                    case 3:
+                        randX = 0;
+                        randY = -1;
+                        break;
+                }
+            }
+            mat[x + randX, y + randY] = var;
+            if (!fin)
+            {
+                if (mat[x + randX * 2, y + randY * 2] == 0)
+                {
+                    mat[x + randX * 2, y + randY * 2] = 1;
+                }
+                else if (mat[x + randX + randY, y + randY + randX] == 0)
+                {
+                    mat[x + randX + randY, y + randY + randX] = 1;
+                }
+                else
+                {
+                    mat[x + randX, y + randY] = 3;
+                }
+            }
+            y = y + randY*2;
+            x = x + randX*2;
         }
 
             private static void AfffichageMatrice(int[,] mat)
@@ -107,15 +184,6 @@ namespace Game_project
                     for (int j = 0; j < mat.GetLength(1); j++)
                         Console.Write($"{mat[i, j]},");
                     Console.WriteLine(")");
-
-
-                
-
-
-
-
-
-
 
             }
            
