@@ -24,7 +24,7 @@ namespace Game_project
     /// </summary>
     public partial class MainWindow : Window
     {
-        private int[,] matrice = new int[80, 80];
+        private int[,] matrice = new int[20, 20];
         private Random rand = new Random();
         private int randX;
         private int randY;
@@ -32,6 +32,7 @@ namespace Game_project
         private int sortieY;
         private int cheminX;
         private int cheminY;
+        Point joueur = new Point(); 
         private DispatcherTimer dispatcherTimer = new DispatcherTimer();
 
 
@@ -41,7 +42,7 @@ namespace Game_project
             Init main = new Init();
             main.ShowDialog();
             CreationMatrice(matrice);
-            CreationJoueur(matrice);
+            CreationJoueur(matrice) ;
             CreationChemin(matrice);
             AfffichageMatrice(matrice);
             // Création de la boucle de Jeu
@@ -57,14 +58,17 @@ namespace Game_project
 
         private  void CreationMatrice(int[,] tab) 
         {
+            
             for (int i = 0; i < tab.GetLength(0); i++)
             {
                 for (int j = 0; j < tab.GetLength(1); j++)
                 {
                     tab[i, 0] = 2;
                     tab[0, i] = 2;
-                    tab[tab.GetLength(0)-1, j] = 2;
-
+                    tab[i, tab.GetLength(0) - 1] = 2;
+                    tab[tab.GetLength(0) - 1, i] = 2;
+                  
+                  
 
 
                 }
@@ -74,50 +78,38 @@ namespace Game_project
         }
         private void CreationJoueur(int[,] mat)
         {
-            randX = rand.Next(0, mat.GetLength(0) - 1);
+            randX = rand.Next(1, mat.GetLength(0) - 1);
             randY = rand.Next(1, mat.GetLength(0) - 1);
             mat[randX, randY] = 4;
+            joueur.X = randX;
+            joueur.Y = randY; 
+            Console.WriteLine($"Player x:{joueur.X} y:{joueur.Y}\n");
+
         }
 
         private void CreationChemin(int[,] mat)
         {
 
-            cheminX = rand.Next(0, mat.GetLength(0) - 1);
-            cheminY = rand.Next(1, mat.GetLength(0) - 1);
-            for (int i = 0; i < mat.GetLength(0); i++)
-            {
-                for (int j = 0; j < mat.GetLength(1); j++)
-                {
-
-                    if (mat[i, j] == 4)
-                    {
-                        cheminX = rand.Next(0, mat.GetLength(0) - 1);
-                        cheminY = rand.Next(1, mat.GetLength(0) - 1);
-
-                    }
-                    else if (mat[i, j] == 2)
-                    {
-                        cheminX = rand.Next(0, mat.GetLength(0) - 1);
-                        cheminY = rand.Next(1, mat.GetLength(0) - 1);
-                    }
-                    mat[cheminX, cheminY] = 1;
-                }
-
-
-            }
+            
         }
 
-        private static void AfffichageMatrice(int[,] mat)
+        private static void ChoixChemin(int[,] mat)
+        {
+
+        }
+
+            private static void AfffichageMatrice(int[,] mat)
         {
             for (int i = 0; i < mat.GetLength(0); i++)
             {
-                for (int j = 0; j < mat.GetLength(1); j++)
-                {
-                    
-                   
-                        Console.WriteLine($"{mat[i,j]}");
-                    
-                }
+               
+                    Console.Write("(");
+                    for (int j = 0; j < mat.GetLength(1); j++)
+                        Console.Write($"{mat[i, j]},");
+                    Console.WriteLine(")");
+
+
+                
 
 
 
