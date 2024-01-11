@@ -8,7 +8,7 @@
         Title="Lumi-Labyrinthe" Height="800" Width="800">
     <Grid>
         <Grid>
-            <Canvas x:Name="LabyrinthCanvas" Margin="0,0,343,251"/>
+            <Canvas x:Name="LabyrinthCanvas" Margin="126,85,217,166"/>
 
         </Grid>
     </Grid>
