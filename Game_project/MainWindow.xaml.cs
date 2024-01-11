@@ -87,95 +87,60 @@ namespace Game_project
 
         }
 
+        private void ChoixChemin(int[,] mat, ref int x, ref int y)
+        {
+            for (int attempts = 0; attempts < 100; attempts++)
+            {
+                int deltaX = rand.Next(-1, 2); // -1, 0, or 1
+                int deltaY = rand.Next(-1, 2); // -1, 0, or 1
+
+                // Check if new position is within bounds and empty
+                if (IsInBounds(mat, x + deltaX, y + deltaY) && mat[x + deltaX, y + deltaY] == 0)
+                {
+                    x += deltaX;
+                    y += deltaY;
+                    mat[x, y] = 1; // Mark the new position
+                    return; // Exit after successful move
+                }
+            }
+            // Handle the case where no valid move is found
+        }
+
+        private bool IsInBounds(int[,] mat, int x, int y)
+        {
+            return x >= 0 && y >= 0 && x < mat.GetLength(0) && y < mat.GetLength(1);
+        }
         private void CreationChemin(int[,] mat)
         {
-            bool fin = false;
+            bool finished = false;
             for (int i = 0; i < mat.GetLength(0); i++)
             {
                 for (int j = 0; j < mat.GetLength(1); j++)
                 {
-                    if (mat[i, j] == 4)
+                    if (mat[i, j] == 4) // Start from the player's position
                     {
-                        ChoixChemin(mat, ref i, ref j, fin);
+                        ChoixChemin(mat, ref i, ref j);
                     }
 
-                    for (int h = 1; h < 15; h++)
+                    if (mat[i, j] == 3) // If path is blocked
                     {
-                        if (mat[i, j] == 3)
-                        {
-                            break;
-                        }
-                        else if (mat[i,j]==1)
-                        {
-                            ChoixChemin(mat, ref i, ref j, fin);
-                        }
-                        if (h == 9)
-                        {
-                            fin = true;
-                            ChoixChemin(mat, ref i, ref j, fin);
-                        }
+                        finished = true;
+                        break;
                     }
+
+                    if (mat[i, j] == 1) // Continue creating path
+                    {
+                        ChoixChemin(mat, ref i, ref j);
+                    }
+                }
+                if (finished)
+                {
+                    break;
                 }
             }
         }
 
-        private void ChoixChemin(int[,] mat, ref int x , ref int y, bool fin)
-        {
-            randY = 0;
-            randX = 0;
-            int var;
-            if (fin)
-            {
-                var = 3;
-            }
-            else
-            {
-                var = 1;
-            }
-            while (mat[x + randX, y + randY] != 0)
-            {
-                randX = rand.Next(0, 4);
-                switch (randX)
-                {
-                    case 0:
-                        randX = 1;
-                        randY = 0;
-                        break;
-                    case 1:
-                        randX = -1;
-                        randY = 0;
-                        break;
-                    case 2:
-                        randX = 0;
-                        randY = 1;
-                        break;
-                    case 3:
-                        randX = 0;
-                        randY = -1;
-                        break;
-                }
-            }
-            mat[x + randX, y + randY] = var;
-            if (!fin)
-            {
-                if (mat[x + randX * 2, y + randY * 2] == 0)
-                {
-                    mat[x + randX * 2, y + randY * 2] = 1;
-                }
-                else if (mat[x + randX + randY, y + randY + randX] == 0)
-                {
-                    mat[x + randX + randY, y + randY + randX] = 1;
-                }
-                else
-                {
-                    mat[x + randX, y + randY] = 3;
-                }
-            }
-            y = y + randY*2;
-            x = x + randX*2;
-        }
-
-            private static void AfffichageMatrice(int[,] mat)
+        private static void AfffichageMatrice(int[,] mat)
         {
             for (int i = 0; i < mat.GetLength(0); i++)
             {
