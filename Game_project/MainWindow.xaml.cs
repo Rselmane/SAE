@@ -1,7 +1,10 @@
 ﻿using System;
+using System.Numerics;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Documents;
 using System.Windows.Media;
+using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Windows.Threading;
 
@@ -14,18 +17,28 @@ namespace Game_project
         private int randX;
         private int randY;
         private double pourcentageZeroEtDeux;
+        private bool sortieEstPlace = false;
+        private bool playerEstPlace = false;
+        private bool findeGeneration = false;
+        private Point Joueur = new Point();
+        private Point positionLaPlusEloignee = new Point(0, 0);
+        private int maxDistance = 0;
 
         public MainWindow()
         {
             InitializeComponent();
             Init main = new Init();
             main.ShowDialog();
-            CreationMatrice(matrice);
-            CreationJoueur(matrice);
-            CreationChemin(matrice);
+
+            while (!sortieEstPlace && !playerEstPlace)
+            {
+                CreationMatrice(matrice);
+                CreationJoueur(matrice);
+                CreationChemin(matrice);
+            }
+
             CreationCheminAlternatif(matrice);
-            AffichageMatrice(matrice);
-            CreateShapes();
+             CreateShapes();
         }
 
         private void CreationMatrice(int[,] tab)
@@ -44,48 +57,50 @@ namespace Game_project
 
         private void CreationJoueur(int[,] mat)
         {
-            randX = rand.Next(mat.GetLength(0) / 4, mat.GetLength(0) / 4 * 3 - 1);
-            randY = rand.Next(mat.GetLength(0) / 4, mat.GetLength(0) / 4 * 3 - 1);
-            mat[randX, randY] = 4;
-            Console.WriteLine($"Player x:{randX} y:{randY}\n");
+
+            if (!playerEstPlace)
+            {
+
+                 randY = 0;
+                 randX = 0;
+                randX = rand.Next(mat.GetLength(0) / 4, mat.GetLength(0) / 4 * 3 - 1);
+                randY = rand.Next(mat.GetLength(0) / 4, mat.GetLength(0) / 4 * 3 - 1);
+                Joueur.X = randX;
+                Joueur.Y = randY;
+
+                mat[randX, randY] = 4;
+                Console.WriteLine($"Player x:{Joueur.X} y:{Joueur.Y}\n");
+                playerEstPlace = true;
+            }
+            
+            
         }
 
         private void CreationChemin(int[,] mat)
         {
-            bool fin = false;
+            // Réinitialiser les variables pour le placement de la sortie
+            maxDistance = 0;
+            positionLaPlusEloignee = new Point(0, 0);
+
+            // Trouve la position du joueur et commencer  l'algorithle DFS
             for (int i = 0; i < mat.GetLength(0); i++)
             {
                 for (int j = 0; j < mat.GetLength(1); j++)
                 {
-                    if (mat[i, j] == 4)
+                    if (mat[i, j] == 4) // 4 représente le joueur
                     {
                         ChoixChemin(mat, ref i, ref j);
-                        if (mat[i, j] != 3)
-                        {
-                            for (int h = 1; h < mat.GetLength(0) / 2 + 1; h++)
-                            {
-                                if (mat[i, j] == 3 || mat[i,j] == 4)
-                                {
-                                    continue;
-                                }
-                                else if (mat[i, j] == 1)
-                                {
-                                    ChoixChemin(mat, ref i, ref j);
-                                }
-                                if (h > mat.GetLength(0) / 2 - 1)
-                                {
-                                    mat[i, j] = 3;
-                                    fin = true;
-                                    Console.WriteLine($"Sortie x:{i} y:{j}");
-                                }
-                            }
-                        }
+                        break; // Sort de la boucle une fois que le chemin est créé
                     }
                 }
-                if (fin)
-                {
-                    break;
-                }
+            }
+
+            // Placez la sortie à la position la plus éloignée trouvée par DFS
+            if (!sortieEstPlace)
+            {
+                mat[(int)positionLaPlusEloignee.X, (int)positionLaPlusEloignee.Y] = 3;
+                sortieEstPlace = true;
+                Console.WriteLine($"Sortie x:{positionLaPlusEloignee.X} y:{positionLaPlusEloignee.Y}");
             }
         }
 
@@ -118,57 +133,104 @@ namespace Game_project
                 int i = rand.Next(1, mat.GetLength(0) - 1);
                 int j = rand.Next(1, mat.GetLength(1) - 1);
 
-                if (mat[i, j] == 0)
+                if (mat[i, j] == 0 && mat[i,j] !=4 && mat[i,j] !=3)
                 {
                     mat[i, j] = 5;
                     CalculPZED(mat, ref pourcentageZeroEtDeux);
                 }
+               
+            }
+        }
+        // Implementation de l'algo  Depth-First Search, DFS
+        private void DFS(int[,] mat, int x, int y, int distance)
+        {
+            if (mat[x, y] != 4)
+            {
+                mat[x, y] = 1; // Marquez la position actuelle comme un chemin
+            }
+
+            // Mettre à jour la position la plus éloignée pour la sortie
+            if (distance > maxDistance)
+            {
+                maxDistance = distance;
+                positionLaPlusEloignee = new Point(x, y);
+            }
+
+            // Directions possibles : haut, bas, gauche, droite
+            int[] dx = { -1, 1, 0, 0 };
+            int[] dy = { 0, 0, -1, 1 };
+            DirectionsAleatoire(dx, dy);
+
+            for (int i = 0; i < 4; i++)
+            {
+                int newX = x + dx[i] * 2;
+                int newY = y + dy[i] * 2;
+
+                // Vérifiez si la nouvelle position est valide et non visitée
+                if (EstValide(mat, newX, newY))
+                {
+                    // Créez un chemin entre les cellules, sauf si cela écraserait le joueur
+                    if (mat[x + dx[i], y + dy[i]] != 4)
+                    {
+                        mat[x + dx[i], y + dy[i]] = 1;
+                    }
+                    DFS(mat, newX, newY, distance + 1);
+                }
             }
         }
 
+
         private void ChoixChemin(int[,] mat, ref int x, ref int y)
         {
-            int randY = 0;
-            int randX = 0;
-            while (mat[x + randX, y + randY] != 0)
+            DFS(mat, x, y, 0);
+            mat[x, y] = 4; // Remarquez à nouveau la position du joueur
+        }
+
+        private void DFS(int[,] mat, int x, int y)
+        {
+            // Directions possibles : haut, bas, gauche, droite
+            int[] dx = { -1, 1, 0, 0 };
+            int[] dy = { 0, 0, -1, 1 };
+            DirectionsAleatoire(dx, dy); // Mélanger les directions pour aléatoire
+
+            for (int i = 0; i < 4; i++)
             {
-                randX = rand.Next(0, 4);
-                switch (randX)
+                int newX = x + dx[i] * 2;
+                int newY = y + dy[i] * 2;
+
+                // Vérifie si la nouvelle position est valide et non visitée
+                if (EstValide(mat, newX, newY))
                 {
-                    case 0:
-                        randX = 1;
-                        randY = 0;
-                        break;
-                    case 1:
-                        randX = -1;
-                        randY = 0;
-                        break;
-                    case 2:
-                        randX = 0;
-                        randY = 1;
-                        break;
-                    case 3:
-                        randX = 0;
-                        randY = -1;
-                        break;
+                    mat[x + dx[i], y + dy[i]] = 1; // Crée un chemin entre les cellules
+                    mat[newX, newY] = 1;
+                    DFS(mat, newX, newY);
                 }
             }
-            mat[x + randX, y + randY] = 1;
-            if (mat[x + randX * 2, y + randY * 2] == 0)
-            {
-                mat[x + randX * 2, y + randY * 2] = 1;
-            }
-            else if (mat[x + randX + randY, y + randY + randX] == 0)
-            {
-                mat[x + randX + randY, y + randY + randX] = 1;
-            }
-            else
-            {
-                mat[x + randX, y + randY] = 3; // Utilisez 3 pour représenter le chemin alternatif
-            }
-            y = y + randY * 2;
-            x = x + randX * 2;
         }
+
+        private void DirectionsAleatoire(int[] dx, int[] dy)
+        {
+            for (int i = 3; i > 0; i--)
+            {
+                int j = rand.Next(i + 1);
+                InverseMatrice(ref dx[i], ref dx[j]);
+                InverseMatrice(ref dy[i], ref dy[j]);
+            }
+        }
+
+        private void InverseMatrice(ref int a, ref int b)
+        {
+            int temp = a;
+            a = b;
+            b = temp;
+        }
+
+        private bool EstValide(int[,] mat, int x, int y)
+        {
+            // Vérifiez si (x, y) est à l'intérieur de la grille, est un mur et pas une bordure
+            return x > 0 && x < mat.GetLength(0) - 1 && y > 0 && y < mat.GetLength(1) - 1 && mat[x, y] == 0;
+        }
+
 
 
         private static void AffichageMatrice(int[,] mat)
