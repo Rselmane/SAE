@@ -12,16 +12,15 @@ namespace Game_project
 {
     public partial class MainWindow : Window
     {
-        private int[,] matrice = new int[40, 40];
+        private int[,] matrice = new int[20, 20];
         private Random rand = new Random();
         private int randX;
         private int randY;
         private double pourcentageZeroEtDeux;
         private bool sortieEstPlace = false;
         private bool playerEstPlace = false;
-        private bool findeGeneration = false;
         private Point Joueur = new Point();
-        private Point positionLaPlusEloignee = new Point(0, 0);
+        private Point positionLaPlusEloignee = new Point();
         private int maxDistance = 0;
 
         public MainWindow()
@@ -146,10 +145,10 @@ namespace Game_project
         {
             if (mat[x, y] != 4)
             {
-                mat[x, y] = 1; // Marquez la position actuelle comme un chemin
+                mat[x, y] = 1; // Marque la position actuelle comme le chemin principal
             }
 
-            // Mettre à jour la position la plus éloignée pour la sortie
+            // Met à jour la position la plus éloignée pour la sortie
             if (distance > maxDistance)
             {
                 maxDistance = distance;
@@ -169,7 +168,7 @@ namespace Game_project
                 // Vérifiez si la nouvelle position est valide et non visitée
                 if (EstValide(mat, newX, newY))
                 {
-                    // Créez un chemin entre les cellules, sauf si cela écraserait le joueur
+                    // Créez un chemin entre les cases, sauf si ça écrase le joueur
                     if (mat[x + dx[i], y + dy[i]] != 4)
                     {
                         mat[x + dx[i], y + dy[i]] = 1;
@@ -183,7 +182,7 @@ namespace Game_project
         private void ChoixChemin(int[,] mat, ref int x, ref int y)
         {
             DFS(mat, x, y, 0);
-            mat[x, y] = 4; // Remarquez à nouveau la position du joueur
+            mat[x, y] = 4; // Remarque à nouveau la position du joueur 
         }
 
         private void DFS(int[,] mat, int x, int y)
@@ -191,7 +190,7 @@ namespace Game_project
             // Directions possibles : haut, bas, gauche, droite
             int[] dx = { -1, 1, 0, 0 };
             int[] dy = { 0, 0, -1, 1 };
-            DirectionsAleatoire(dx, dy); // Mélanger les directions pour aléatoire
+            DirectionsAleatoire(dx, dy); // Mélange les directions aléatoirement
 
             for (int i = 0; i < 4; i++)
             {
@@ -201,7 +200,7 @@ namespace Game_project
                 // Vérifie si la nouvelle position est valide et non visitée
                 if (EstValide(mat, newX, newY))
                 {
-                    mat[x + dx[i], y + dy[i]] = 1; // Crée un chemin entre les cellules
+                    mat[x + dx[i], y + dy[i]] = 1; // Créer  un chemin entre les cellules
                     mat[newX, newY] = 1;
                     DFS(mat, newX, newY);
                 }
@@ -213,12 +212,12 @@ namespace Game_project
             for (int i = 3; i > 0; i--)
             {
                 int j = rand.Next(i + 1);
-                InverseMatrice(ref dx[i], ref dx[j]);
-                InverseMatrice(ref dy[i], ref dy[j]);
+                EchangeValeursMatrice(ref dx[i], ref dx[j]);
+                EchangeValeursMatrice(ref dy[i], ref dy[j]);
             }
         }
 
-        private void InverseMatrice(ref int a, ref int b)
+        private void EchangeValeursMatrice(ref int a, ref int b)
         {
             int temp = a;
             a = b;
@@ -227,7 +226,7 @@ namespace Game_project
 
         private bool EstValide(int[,] mat, int x, int y)
         {
-            // Vérifiez si (x, y) est à l'intérieur de la grille, est un mur et pas une bordure
+            // Vérifiez si x et y est à l'intérieur de la grille, est un mur et pas une bordure
             return x > 0 && x < mat.GetLength(0) - 1 && y > 0 && y < mat.GetLength(1) - 1 && mat[x, y] == 0;
         }
 
