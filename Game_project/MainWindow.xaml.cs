@@ -1,10 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
+using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Media.Media3D;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Windows.Threading;
@@ -21,17 +25,53 @@ namespace Game_project
         private double pourcentageZeroEtDeux;
         private bool sortieEstPlace = false;
         private bool playerEstPlace = false;
+        private bool goLeft, goRight = false;
+        private double playerSpeed = 20;
         private Point Joueur = new Point();
         private Point positionLaPlusEloignee = new Point();
         private Point chemins = new Point();
+        private Point positionDepart = new Point();
+
         private int maxDistance = 0;
+        private Rect collisionJoueur = new Rect();
         private List<Point> ListChemins = new List<Point>();
+        private List<Ennemies> ListEnnemies = new List<Ennemies>();
+        private DispatcherTimer dispatcherTimer = new DispatcherTimer();
+        // classe de pinceau d'image que nous utiliserons comme image du joueur appelée skin du joueur
+        private ImageBrush background = new ImageBrush();
+        private ImageBrush wall = new ImageBrush();
+        private ImageBrush murExterieur = new ImageBrush();
+        private ImageBrush tbox = new ImageBrush();
+        private ImageBrush Player = new ImageBrush();
+        private ImageBrush Enemies = new ImageBrush();
 
         public MainWindow()
         {
             InitializeComponent();
             Init main = new Init();
             main.ShowDialog();
+            LabyrinthCanvas.Focus();
+            // rafraissement toutes les 16 milliseconds
+            dispatcherTimer.Tick += GameEngine;
+            dispatcherTimer.Interval = TimeSpan.FromMilliseconds(16);
+            // lancement du timer
+            dispatcherTimer.Start();
+
+            // chargement de l’image du joueur 
+            background.ImageSource = new BitmapImage(new
+            Uri(AppDomain.CurrentDomain.BaseDirectory + "Images/Background.jpg"));
+            wall.ImageSource = new BitmapImage(new
+          Uri(AppDomain.CurrentDomain.BaseDirectory + "Images/wall.jpg"));
+            murExterieur.ImageSource = new BitmapImage(new
+         Uri(AppDomain.CurrentDomain.BaseDirectory + "Images/wall2.jpg"));
+            tbox.ImageSource = new BitmapImage(new
+       Uri(AppDomain.CurrentDomain.BaseDirectory + "Images/tbox.jpg"));
+            Player.ImageSource = new BitmapImage(new
+       Uri(AppDomain.CurrentDomain.BaseDirectory + "Images/head.png"));
+            Enemies.ImageSource = new BitmapImage(new
+      Uri(AppDomain.CurrentDomain.BaseDirectory + "Images/ennemie.jpg"));
+            // assignement de skin du joueur au rectangle associé
+            this.Background = background;
 
             while (!sortieEstPlace && !playerEstPlace)
             {
@@ -44,8 +84,10 @@ namespace Game_project
             AffichageMatrice(matrice);
             CreationEnnemy(matrice, 5);
             CreateShapes();
-          
-            
+            //ChangeLaLuminosité();
+            //Moveplayer();
+
+
         }
 
         private void CreationMatrice(int[,] tab)
@@ -68,19 +110,22 @@ namespace Game_project
             if (!playerEstPlace)
             {
 
-                 randY = 0;
-                 randX = 0;
+                randY = 0;
+                randX = 0;
                 randX = rand.Next(mat.GetLength(0) / 4, mat.GetLength(0) / 4 * 3 - 1);
                 randY = rand.Next(mat.GetLength(0) / 4, mat.GetLength(0) / 4 * 3 - 1);
-                Joueur.X = randX;
-                Joueur.Y = randY;
+                positionDepart.X = randX;
+                positionDepart.Y = randY;
 
                 mat[randX, randY] = 4;
-                Console.WriteLine($"Player x:{Joueur.X} y:{Joueur.Y}\n");
+               Joueur.X = positionDepart.X;
+               Joueur.Y = positionDepart.Y;
+
+                Console.WriteLine($"Player x:{positionDepart.X} y:{positionDepart.Y}\n");
                 playerEstPlace = true;
             }
-            
-            
+
+
         }
 
         private void CreationChemin(int[,] mat)
@@ -140,13 +185,13 @@ namespace Game_project
                 int i = rand.Next(1, mat.GetLength(0) - 1);
                 int j = rand.Next(1, mat.GetLength(1) - 1);
 
-                if (mat[i, j] == 0 && mat[i,j] !=4 && mat[i,j] !=3)
+                if (mat[i, j] == 0 && mat[i, j] != 4 && mat[i, j] != 3)
                 {
                     mat[i, j] = 5;
 
                     CalculPZED(mat, ref pourcentageZeroEtDeux);
                 }
-               
+
             }
         }
         // Implementation de l'algo  Depth-First Search, DFS
@@ -155,10 +200,10 @@ namespace Game_project
             if (mat[x, y] != 4)
             {
                 mat[x, y] = 1;
-                chemins.X = x; 
+                chemins.X = x;
                 chemins.Y = y;
                 ListChemins.Add(chemins);
-                  
+
             }
 
             // Met à jour la position la plus éloignée pour la sortie
@@ -273,18 +318,20 @@ namespace Game_project
         {
             for (int i = 0; i < nbennemy; i++)
             {
-                randIndex = rand.Next(0, ListChemins.Count);
-                mat[(int)ListChemins[randIndex].X, (int)ListChemins[randIndex].Y] = 6;
+                randIndex = rand.Next(0, ListChemins.Count - 1);
+                mat[(int)ListChemins[randIndex].X, (int)ListChemins[randIndex].Y]  = 6;
+
                 ListChemins.RemoveAt(randIndex);
                 Console.WriteLine(ListChemins.Count);
+                ListEnnemies.Add(new Ennemies("fantomes", (int)ListChemins[randIndex].X, (int)ListChemins[randIndex].Y));
             }
-           
+
         }
 
 
 
-        
-      
+
+
 
         private void CreateShapes()
         {
@@ -300,14 +347,16 @@ namespace Game_project
                         case 0: // Remplacez par un rectangle blanc
                             shape = new Rectangle
                             {
+                                Tag = "murInterieur",
                                 Width = 20,
                                 Height = 20,
-                                Fill = Brushes.Black
+                                Fill = wall
                             };
                             break;
                         case 1: // Remplacez par un rectangle blanc
                             shape = new Rectangle
                             {
+                                Tag = "CheminPrincipal",
                                 Width = 20,
                                 Height = 20,
                                 Fill = Brushes.White
@@ -316,30 +365,35 @@ namespace Game_project
                         case 2: // Remplacez par un rectangle noir
                             shape = new Rectangle
                             {
+                                Tag = "MurExterieure",
                                 Width = 20,
                                 Height = 20,
-                                Fill = Brushes.Black
+                                Fill = murExterieur
                             };
                             break;
                         case 3: // Remplacez par un carré jaune
                             shape = new Rectangle
                             {
+                                Tag = "tresore",
                                 Width = 20,
                                 Height = 20,
-                                Fill = Brushes.Yellow
+                                Fill = tbox
                             };
                             break;
                         case 4: // Remplacez par un rectangle rouge
                             shape = new Rectangle
                             {
+                                Tag = "player",
                                 Width = 20,
                                 Height = 20,
-                                Fill = Brushes.Red
+                                Fill = Player
                             };
+
                             break;
                         case 5: // Remplacez par un rectangle blanc
                             shape = new Rectangle
                             {
+                                Tag = "cheminSecondaire",
                                 Width = 20,
                                 Height = 20,
                                 Fill = Brushes.White
@@ -348,9 +402,10 @@ namespace Game_project
                         case 6:
                             shape = new Rectangle()
                             {
+                                Tag = "Enemy",
                                 Width = 20,
                                 Height = 20,
-                                Fill = Brushes.Orange
+                                Fill = Enemies
 
                             };
                             break;
@@ -368,10 +423,104 @@ namespace Game_project
                         LabyrinthCanvas.Children.Add(shape);
                     }
                 }
+
+            }
+
+        }
+
+
+        private void MovePlayerLeftRight()
+        {
+            int newX = (int)Joueur.X;
+
+            if (goLeft || goRight)
+            {
+                if (goLeft)
+                {
+                    newX -= 1;
+                }
+                else if (goRight)
+                {
+                    newX += 1;
+                }
+
+                // Ensure newX is within the horizontal bounds of the matrix
+                if (newX >= 0 && newX < matrice.GetLength(1) &&
+                    (matrice[(int)Joueur.Y, newX] == 0 || matrice[(int)Joueur.Y, newX] == 1 || matrice[(int)Joueur.Y, newX] == 5))
+                {
+                    // Reset the original position in the matrix
+                    matrice[(int)Joueur.Y, (int)Joueur.X] = 1; // Assuming 1 is the original value
+
+                    // Set the new position in the matrix
+                    Joueur.X = newX;
+                    matrice[(int)Joueur.Y, newX] = 4; // 4 represents the player
+
+                    // Update the player's position on the canvas
+                    Rectangle player = LabyrinthCanvas.Children.OfType<Rectangle>().FirstOrDefault(r => r.Tag.ToString() == "player");
+                    if (player != null)
+                    {
+                        Canvas.SetLeft(player, newX * 20); // Adjusting position based on tile size
+                    }
+
+                    Console.WriteLine($"Joueur x : {Joueur.X}  y: {Joueur.Y}");
+
+                    Console.WriteLine("---------------------------------");
+                    AffichageMatrice(matrice);
+                    Console.WriteLine("---------------------------------");
+                }
             }
         }
-                }
+
+
+
+        private void LabyrinthCanvas_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Left)
+            {
+                goLeft = true;
+            }
+            if (e.Key == Key.Right)
+            {
+                goRight = true;
+            }
+
+        }
+
+        private void LabyrinthCanvas_KeyUp(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Left)
+            {
+                goLeft = false;
+            }
+            if (e.Key == Key.Right)
+            {
+                goRight = false;
+            }
+        }
+
+        private void GameEngine(object sender, EventArgs e)
+        {
+            MovePlayerLeftRight();
+
+         
+
+        }
+        /* private  void  ChangeLaLuminosité()
+         {
+             foreach(Rectangle x in LabyrinthCanvas.Children.OfType<Rectangle>())
+             {
+                 if( (string)x.Tag != "player")
+                 {
+                     x.Fill = Brushes.Black;
+                 }
+
+             }
+         }
+     */
+
+    }
 }
+       
        
         
             

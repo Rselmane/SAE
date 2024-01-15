@@ -6,5 +6,5 @@
         xmlns:local="clr-namespace:Game_project"
         mc:Ignorable="d"
         Title="Lumi-Labyrinthe" Height="800" Width="800">
-    <Canvas x:Name="LabyrinthCanvas" Margin="126,85,217,166"/>
+    <Canvas x:Name="LabyrinthCanvas"  KeyDown="LabyrinthCanvas_KeyDown" KeyUp="LabyrinthCanvas_KeyUp" Focusable="True"/>
 </Window>
