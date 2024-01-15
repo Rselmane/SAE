@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Numerics;
 using System.Windows;
 using System.Windows.Controls;
@@ -16,12 +17,15 @@ namespace Game_project
         private Random rand = new Random();
         private int randX;
         private int randY;
+        private int randIndex;
         private double pourcentageZeroEtDeux;
         private bool sortieEstPlace = false;
         private bool playerEstPlace = false;
         private Point Joueur = new Point();
         private Point positionLaPlusEloignee = new Point();
+        private Point chemins = new Point();
         private int maxDistance = 0;
+        private List<Point> ListChemins = new List<Point>();
 
         public MainWindow()
         {
@@ -37,7 +41,11 @@ namespace Game_project
             }
 
             CreationCheminAlternatif(matrice);
-             CreateShapes();
+            AffichageMatrice(matrice);
+            CreationEnnemy(matrice, 5);
+            CreateShapes();
+          
+            
         }
 
         private void CreationMatrice(int[,] tab)
@@ -135,6 +143,7 @@ namespace Game_project
                 if (mat[i, j] == 0 && mat[i,j] !=4 && mat[i,j] !=3)
                 {
                     mat[i, j] = 5;
+
                     CalculPZED(mat, ref pourcentageZeroEtDeux);
                 }
                
@@ -145,7 +154,11 @@ namespace Game_project
         {
             if (mat[x, y] != 4)
             {
-                mat[x, y] = 1; // Marque la position actuelle comme le chemin principal
+                mat[x, y] = 1;
+                chemins.X = x; 
+                chemins.Y = y;
+                ListChemins.Add(chemins);
+                  
             }
 
             // Met à jour la position la plus éloignée pour la sortie
@@ -156,24 +169,29 @@ namespace Game_project
             }
 
             // Directions possibles : haut, bas, gauche, droite
-            int[] dx = { -1, 1, 0, 0 };
-            int[] dy = { 0, 0, -1, 1 };
-            DirectionsAleatoire(dx, dy);
+            int[] directionX = { -1, 1, 0, 0 };
+            int[] directionY = { 0, 0, -1, 1 };
+            DirectionsAleatoire(directionX, directionY);
 
             for (int i = 0; i < 4; i++)
             {
-                int newX = x + dx[i] * 2;
-                int newY = y + dy[i] * 2;
+                int nouveauX = x + directionX[i] * 2;
+                int nouveauxY = y + directionY[i] * 2;
 
                 // Vérifiez si la nouvelle position est valide et non visitée
-                if (EstValide(mat, newX, newY))
+                if (EstValide(mat, nouveauX, nouveauxY))
                 {
                     // Créez un chemin entre les cases, sauf si ça écrase le joueur
-                    if (mat[x + dx[i], y + dy[i]] != 4)
+                    if (mat[x + directionX[i], y + directionY[i]] != 4)
                     {
-                        mat[x + dx[i], y + dy[i]] = 1;
+                        mat[x + directionX[i], y + directionY[i]] = 1;
+                        chemins.X = x + directionX[i];
+                        chemins.Y = y + directionY[i];
+                        ListChemins.Add(chemins);
+
+
                     }
-                    DFS(mat, newX, newY, distance + 1);
+                    DFS(mat, nouveauX, nouveauxY, distance + 1);
                 }
             }
         }
@@ -201,7 +219,14 @@ namespace Game_project
                 if (EstValide(mat, newX, newY))
                 {
                     mat[x + dx[i], y + dy[i]] = 1; // Créer  un chemin entre les cellules
+                    chemins.X = x + dx[i];
+                    chemins.Y = y + dy[i];
+                    ListChemins.Add(chemins);
+
                     mat[newX, newY] = 1;
+                    chemins.X = newX;
+                    chemins.Y = newY;
+                    ListChemins.Add(chemins);
                     DFS(mat, newX, newY);
                 }
             }
@@ -244,6 +269,23 @@ namespace Game_project
                 Console.WriteLine(")");
             }
         }
+        private void CreationEnnemy(int[,] mat, int nbennemy)
+        {
+            for (int i = 0; i < nbennemy; i++)
+            {
+                randIndex = rand.Next(0, ListChemins.Count);
+                mat[(int)ListChemins[randIndex].X, (int)ListChemins[randIndex].Y] = 6;
+                ListChemins.RemoveAt(randIndex);
+                Console.WriteLine(ListChemins.Count);
+            }
+           
+        }
+
+
+
+        
+      
+
         private void CreateShapes()
         {
             // Parcourez la matrice et créez les formes en fonction des valeurs
@@ -301,6 +343,15 @@ namespace Game_project
                                 Width = 20,
                                 Height = 20,
                                 Fill = Brushes.White
+                            };
+                            break;
+                        case 6:
+                            shape = new Rectangle()
+                            {
+                                Width = 20,
+                                Height = 20,
+                                Fill = Brushes.Orange
+
                             };
                             break;
                         default:
