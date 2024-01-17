@@ -18,7 +18,7 @@ namespace Game_project
 {
     public partial class MainWindow : Window
     {
-        private int[,] matrice = new int[30, 30];
+        private int[,] matrice = new int[20, 20];
         private Random rand = new Random();
         private int randX;
         private int randY;
@@ -27,6 +27,7 @@ namespace Game_project
         private bool sortieEstPlace = false;
         private bool playerEstPlace = false;
         private bool goLeft, goRight,goUp,goDown = false;
+        private bool aGagne = false;
         private double playerSpeed = 20;
         private Point Joueur = new Point();
         private Point positionLaPlusEloignee = new Point();
@@ -53,7 +54,7 @@ namespace Game_project
             main.ShowDialog();
             LabyrinthCanvas.Focus();
             // rafraissement toutes les 16 milliseconds
-            dispatcherTimer.Tick += GameEngine;
+            dispatcherTimer.Tick += GameEngine; 
             dispatcherTimer.Interval = TimeSpan.FromMilliseconds(64);
             // lancement du timer
             dispatcherTimer.Start();
@@ -62,28 +63,26 @@ namespace Game_project
             background.ImageSource = new BitmapImage(new
             Uri(AppDomain.CurrentDomain.BaseDirectory + "Images/Background.jpg"));
             wall.ImageSource = new BitmapImage(new
-          Uri(AppDomain.CurrentDomain.BaseDirectory + "Images/wall.jpg"));
+            Uri(AppDomain.CurrentDomain.BaseDirectory + "Images/wall.jpg"));
             murExterieur.ImageSource = new BitmapImage(new
-         Uri(AppDomain.CurrentDomain.BaseDirectory + "Images/wall2.jpg"));
+            Uri(AppDomain.CurrentDomain.BaseDirectory + "Images/wall2.jpg"));
             tbox.ImageSource = new BitmapImage(new
-       Uri(AppDomain.CurrentDomain.BaseDirectory + "Images/tbox.jpg"));
+            Uri(AppDomain.CurrentDomain.BaseDirectory + "Images/tbox.jpg"));
             Player.ImageSource = new BitmapImage(new
-       Uri(AppDomain.CurrentDomain.BaseDirectory + "Images/head.png"));
+            Uri(AppDomain.CurrentDomain.BaseDirectory + "Images/head.png"));
             Enemies.ImageSource = new BitmapImage(new
-      Uri(AppDomain.CurrentDomain.BaseDirectory + "Images/ennemie.jpg"));
+            Uri(AppDomain.CurrentDomain.BaseDirectory + "Images/ennemie.jpg"));
             // assignement de skin du joueur au rectangle associé
             this.Background = background;
 
-            while (!sortieEstPlace && !playerEstPlace)
-            {
-                CreationMatrice(matrice);
-                CreationJoueur(matrice);
-                CreationChemin(matrice);
-            }
-
+            CreationMatrice(matrice);
+            CreationJoueur(matrice);
+            CreationChemin(matrice);
             CreationCheminAlternatif(matrice);
-            AffichageMatrice(matrice);
             CreationEnnemy(matrice, 5);
+            AugmenteDix(matrice);
+            //CreateShapes();
+            AffichageMatrice(matrice);
             //ChangeLaLuminosité();
             //Moveplayer();
 
@@ -106,24 +105,19 @@ namespace Game_project
 
         private void CreationJoueur(int[,] mat)
         {
-
-            if (!playerEstPlace)
-            {
-
                 randY = 0;
                 randX = 0;
                 randX = rand.Next(mat.GetLength(0) / 4, mat.GetLength(0) / 4 * 3 - 1);
                 randY = rand.Next(mat.GetLength(0) / 4, mat.GetLength(0) / 4 * 3 - 1);
                 positionDepart.X = randX;
                 positionDepart.Y = randY;
+                Joueur.X = randX;
+                Joueur.Y = randX;
 
-                mat[randX, randY] = 4;
-               Joueur.X = positionDepart.X;
-               Joueur.Y = positionDepart.Y;
+            mat[randX, randY] = 4;
 
-                Console.WriteLine($"Player x:{positionDepart.X} y:{positionDepart.Y}\n");
-                playerEstPlace = true;
-            }
+            Console.WriteLine($"Player x:{positionDepart.X} y:{positionDepart.Y}\n");
+            
 
 
         }
@@ -153,6 +147,20 @@ namespace Game_project
                 mat[(int)positionLaPlusEloignee.X, (int)positionLaPlusEloignee.Y] = 3;
                 sortieEstPlace = true;
                 Console.WriteLine($"Sortie x:{positionLaPlusEloignee.X} y:{positionLaPlusEloignee.Y}");
+            }
+        }
+
+        private void AugmenteDix(int[,] mat)
+        {
+            for (int i = 0; i < mat.GetLength(0); i++)
+            {
+                for (int j = 0; j < mat.GetLength(1); j++)
+                {
+                    if (mat[i, j] != 4) // 4 représente le joueur
+                    {
+                        mat[i, j] += 10; // Sort de la boucle une fois que tous est noir
+                    }
+                }
             }
         }
 
@@ -318,24 +326,44 @@ namespace Game_project
         {
             for (int i = 0; i < nbennemy; i++)
             {
-                randIndex = rand.Next(0, ListChemins.Count - 1);
-                mat[(int)ListChemins[randIndex].X, (int)ListChemins[randIndex].Y]  = 6;
+               // randIndex = rand.Next(0, ListChemins.Count - 1);
+                //mat[(int)ListChemins[randIndex].X, (int)ListChemins[randIndex].Y]  = 6;
 
-                ListChemins.RemoveAt(randIndex);
-                Console.WriteLine(ListChemins.Count);
-                ListEnnemies.Add(new Ennemies("fantomes", (int)ListChemins[randIndex].X, (int)ListChemins[randIndex].Y));
+               // ListChemins.RemoveAt(randIndex);
+              //  Console.WriteLine(ListChemins.Count);
+               // ListEnnemies.Add(new Ennemies("fantomes", (int)ListChemins[randIndex].X, (int)ListChemins[randIndex].Y));
             }
 
         }
 
 
+        private void Revelation(int[,] mat, int joueurX, int joueurY)
+        {
+            // Définit la portée de la révélation autour du joueur
+            int portee = 1;
 
-
+            // Parcourir les cases autour de la position du joueur
+            for (int i = joueurX - portee; i <= joueurX + portee; i++)
+            {
+                for (int j = joueurY - portee; j <= joueurY + portee; j++)
+                {
+                    // Vérifier si la case est à l'intérieur de la grille
+                    if (i >= 0 && i < mat.GetLength(0) && j >= 0 && j < mat.GetLength(1))
+                    {
+                        // Révéler la case si elle est actuellement dans l'obscurité
+                        if (mat[i, j] >= 10)
+                        {
+                            mat[i, j] -= 10;
+                        }
+                    }
+                }
+            }
+        }
 
         private void CreateShapes()
         {
             // Effacer tous les éléments existants dans le Canvas
-            LabyrinthCanvas.Children.Clear();
+           LabyrinthCanvas.Children.Clear();
 
             // Définir la largeur et la hauteur du Canvas en fonction de la taille de la matrice
             LabyrinthCanvas.Width = matrice.GetLength(1) * 20;
@@ -347,7 +375,10 @@ namespace Game_project
                 for (int j = 0; j < matrice.GetLength(1); j++)
                 {
                     Shape shape = null;
-                    Rect colision;
+                    if (matrice[i, j] < 0)
+                    {
+                        matrice[i, j] += 10;
+                    }
 
                     switch (matrice[i, j])
                     {
@@ -414,10 +445,29 @@ namespace Game_project
                                 Height = 20,
                                 Fill = Enemies
                             };
-                            
+                            break;
+                        case 9: // Remplacez par un rectangle blanc
+                            shape = new Rectangle
+                            {
+                                Tag = "cheminSecondaire",
+                                Width = 20,
+                                Height = 20,
+                                Fill = Brushes.White
+                            };
                             break;
                         default:
                             break;
+                    }
+                    if (matrice[i, j] > 9)
+                    {
+                        shape = new Rectangle()
+                        {
+                            Tag = "Tenebre",
+                            Width = 20,
+                            Height = 20,
+                            Fill = Brushes.Black
+                        };
+
                     }
 
                     if (shape != null)
@@ -434,14 +484,33 @@ namespace Game_project
             }
         }
 
+        private void ShowSolution()
+        {
+
+            for (int i = 0; i < matrice.GetLength(0); i++)
+            {
+                for (int j = 0; j < matrice.GetLength(1); j++)
+                {
+
+                    if (matrice[i, j] < 0)
+                    {
+                        matrice[i, j] += 10;
+                    }
 
 
 
-        private void MovePlayerLeftRight()
+                }
+            }
+        }
+
+
+
+
+
+                private void MovePlayerLeftRight()
         {
             int newX = (int)Joueur.X;
             int newY = (int)Joueur.Y;
-
             if (goLeft || goRight)
             {
                 if (goLeft)
@@ -451,6 +520,7 @@ namespace Game_project
                 else if (goRight)
                 {
                     newX += 1;
+
                 }
             }
             else if (goUp || goDown)
@@ -469,36 +539,60 @@ namespace Game_project
             // Vérification des limites horizontales et verticales
             if (newX >= 0 && newX < matrice.GetLength(1) && newY >= 0 && newY < matrice.GetLength(0))
             {
-                if (matrice[newY, newX] == 1 || matrice[newY, newX] == 5 || matrice[newY, newX] == 3 || matrice[newY, newX] == 6)
+
+
+                if (matrice[newY, newX] == 13 || matrice[newY, newX] == 3)
                 {
-                   
-                    // Mise à jour de la position horizontale et verticale
-                    Joueur.X = newX;
-                    Joueur.Y = newY;
+                    aGagne = true;
+                }
+
+                if (matrice[newY,newX] == 11 || matrice[newY, newX] == 1 || matrice[newY, newX] == 15 || matrice[newY, newX] == 5)
+                {
+                    if (goUp || goDown || goRight || goLeft)
+                    {
+
+
+
+                        matrice[(int)Joueur.Y, (int)Joueur.X] = 11;
+
+
+                        
+                        Joueur.X = newX;
+                        Joueur.Y = newY;
+                        matrice[newY, newX] = 4;
+                        Revelation(matrice, (int)Joueur.Y, (int)Joueur.X);
+
+                        CreateShapes();
+                       
+                    }
+
                 }
             }
 
             // Mise à jour de la position sur le canvas
-            Rectangle player = LabyrinthCanvas.Children.OfType<Rectangle>().FirstOrDefault(r => r.Tag.ToString() == "player");
+            
+
             if (goUp || goDown || goRight || goLeft)
             {
+                Rectangle player = LabyrinthCanvas.Children.OfType<Rectangle>().FirstOrDefault(r => r.Tag.ToString() == "player");
                 Canvas.SetLeft(player, Joueur.X * 20); // Ajustement de la position horizontale
                 Canvas.SetTop(player, Joueur.Y * 20);  // Ajustement de la position verticale
 
-                Canvas.SetZIndex(player, 0); // Ajustement de la position verticale
-
-                Console.WriteLine($"Joueur x : {Joueur.X}  y: {Joueur.Y}");
-                Console.WriteLine($"Canvas Width: {LabyrinthCanvas.ActualWidth}, Height: {LabyrinthCanvas.ActualHeight}");
-                Console.WriteLine(Canvas.GetLeft(player));
-                Console.WriteLine(Canvas.GetTop(player));
-                Canvas.SetZIndex(player, Canvas.GetZIndex(player) + 1);
+              ///  Console.WriteLine($"Joueur x : {Joueur.X}  y: {Joueur.Y}");
+               //Console.WriteLine($"Canvas Width: {LabyrinthCanvas.ActualWidth}, Height: {LabyrinthCanvas.ActualHeight}");
+               //Console.WriteLine(Canvas.GetLeft(player));
+               //Console.WriteLine(Canvas.GetTop(player));
+               //Canvas.SetZIndex(player, Canvas.GetZIndex(player) + 1);
 
 
-                Console.WriteLine($"New Player Position - X: {newX}, Y: {newY}");
+               // Console.WriteLine($"New Player Position - X: {newX}, Y: {newY}");
+
                 Console.WriteLine("---------------------------------");
-                AffichageMatrice(matrice);
+               AffichageMatrice(matrice);
                 Console.WriteLine("---------------------------------");
+              
             }
+            
         }
 
         private void LabyrinthCanvas_Loaded(object sender, RoutedEventArgs e)
@@ -552,9 +646,7 @@ namespace Game_project
         private void GameEngine(object sender, EventArgs e)
         {
             MovePlayerLeftRight();
-
-         
-
+            CheckWin();
         }
         /* private  void  ChangeLaLuminosité()
          {
@@ -568,8 +660,17 @@ namespace Game_project
              }
          }
      */
+        private void CheckWin()
+        {
 
+            if(aGagne)
+            {
+                MessageBox.Show("Gagné !!", "Fin de partie", MessageBoxButton.OK,MessageBoxImage.Exclamation);
+                Application.Current.Shutdown();
+            }
+        }
     }
+    
 }
        
        
