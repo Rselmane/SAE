@@ -5,14 +5,19 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Game_project"
         mc:Ignorable="d"
-        Title="Selection Niveau" Height="450" Width="800">
+        Title="Selection Niveau" Height="450" Width="800" ResizeMode="CanResize">
     <Grid Background="Black">
         <Label Margin="-10,0,10,0">
             <Grid Height="434" Width="790">
-                <Label x:Name="lbNomJeu" Content="Lumi-Labyrinthe" HorizontalAlignment="Left" Height="63" Margin="260,135,0,0" VerticalAlignment="Top" Width="310" Foreground="White" BorderThickness="60,4,0,0" FontSize="24"  />
-                <Button x:Name="btJouer" Content="Jouer" HorizontalAlignment="Left" Height="35" Margin="340,217,0,0" VerticalAlignment="Top" Width="132" Click="btJouer_Click"/>
+                <Label x:Name="lbNomJeu" Content="Lumi-Labyrinthe" HorizontalAlignment="Center" Height="63" Margin="0,24,0,0" VerticalAlignment="Top" Width="310" Foreground="White" BorderThickness="60,4,0,0" FontSize="24"  />
+                <Button x:Name="btJouer" Content="Jouer" HorizontalAlignment="Center" Height="44" Margin="0,292,0,0" VerticalAlignment="Top" Width="178" Click="btJouer_Click" FontSize="20"/>
+                <ComboBox x:Name="cb_diffculte" HorizontalAlignment="Center" Height="35" Margin="0,217,0,0" VerticalAlignment="Top" Width="178" SelectedIndex="0" FontSize="20" >
+                    <ComboBoxItem Content="Facile"/>
+                    <ComboBoxItem Content="Moyen"/>
+                    <ComboBoxItem Content="Difficile"/>
+                </ComboBox>
+                <Label Content="Choix Difficulté " HorizontalAlignment="Left" Height="66" Margin="301,134,0,0" VerticalAlignment="Top" Width="278" Foreground="White" FontSize="24" />
             </Grid>
         </Label>
-
     </Grid>
 </Window>

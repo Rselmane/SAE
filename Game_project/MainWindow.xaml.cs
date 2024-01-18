@@ -16,27 +16,32 @@ using System.Windows.Threading;
 
 namespace Game_project
 {
+    public enum Difficulte
+    {
+        Facile,
+        Moyen,
+        Difficile
+    }
     public partial class MainWindow : Window
     {
-        private int[,] matrice = new int[20, 20];
+
+        private int[,] matrice;
         private Random rand = new Random();
         private int randX;
         private int randY;
         private int randIndex;
+        private int nbEnnemies;
         private double pourcentageZeroEtDeux;
         private bool sortieEstPlace = false;
-        private bool playerEstPlace = false;
         private bool goLeft, goRight,goUp,goDown,solutionAffiche = false;
-        private bool aGagne = false;
-        private double playerSpeed = 20;
+        private bool aGagne,aPerdu = false;
         private Point Joueur = new Point();
         private Point positionLaPlusEloignee = new Point();
         private Point chemins = new Point();
         private Point positionDepart = new Point();
-
+        private Point cheminAlternatif = new Point();
         private int maxDistance = 0;
-        private Rect collisionJoueur = new Rect();
-        private List<Point> ListChemins = new List<Point>();
+        private List<Point> ListCheminsSecondaire = new List<Point>();
         private List<Ennemies> ListEnnemies = new List<Ennemies>();
         private DispatcherTimer dispatcherTimer = new DispatcherTimer();
         // classe de pinceau d'image que nous utiliserons comme image du joueur appelée skin du joueur
@@ -54,7 +59,7 @@ namespace Game_project
             main.ShowDialog();
             LabyrinthCanvas.Focus();
             // rafraissement toutes les 16 milliseconds
-            dispatcherTimer.Tick += GameEngine; 
+            dispatcherTimer.Tick += GameEngine;
             dispatcherTimer.Interval = TimeSpan.FromMilliseconds(64);
             // lancement du timer
             dispatcherTimer.Start();
@@ -74,19 +79,43 @@ namespace Game_project
             Uri(AppDomain.CurrentDomain.BaseDirectory + "Images/ennemie.jpg"));
             // assignement de skin du joueur au rectangle associé
             this.Background = background;
+        
+
+            switch ((Difficulte)main.cb_diffculte.SelectedIndex)
+            {
+                case Difficulte.Facile:
+                    {
+
+                        matrice = new int[20,20];
+                        nbEnnemies = 10;
+                        break;
+                    }
+                case Difficulte.Moyen :
+                    {
+
+                        matrice = new int[25, 25];
+                        nbEnnemies = 15;
+                        break;
+                    }
+                case Difficulte.Difficile :
+                   {
+                        matrice = new int[30, 30];
+                        nbEnnemies = 20;
+                        break;
+                    }
+
+        }
 
             CreationMatrice(matrice);
             CreationJoueur(matrice);
             CreationChemin(matrice);
             CreationCheminAlternatif(matrice);
-            CreationEnnemy(matrice, 5);
+            CreationEnnemy(matrice, nbEnnemies);
             AugmenteDix(matrice);
             //CreateShapes();
             AffichageMatrice(matrice);
             //ChangeLaLuminosité();
             //Moveplayer();
-
-
         }
 
         private void CreationMatrice(int[,] tab)
@@ -196,6 +225,10 @@ namespace Game_project
                 if (mat[i, j] == 0 && mat[i, j] != 4 && mat[i, j] != 3)
                 {
                     mat[i, j] = 5;
+                    cheminAlternatif.X = i;
+                    cheminAlternatif.Y = j;
+                    ListCheminsSecondaire.Add(cheminAlternatif);
+
 
                     CalculPZED(mat, ref pourcentageZeroEtDeux);
                 }
@@ -210,7 +243,6 @@ namespace Game_project
                 mat[x, y] = 1;
                 chemins.X = x;
                 chemins.Y = y;
-                ListChemins.Add(chemins);
 
             }
 
@@ -240,7 +272,6 @@ namespace Game_project
                         mat[x + directionX[i], y + directionY[i]] = 1;
                         chemins.X = x + directionX[i];
                         chemins.Y = y + directionY[i];
-                        ListChemins.Add(chemins);
 
 
                     }
@@ -274,12 +305,10 @@ namespace Game_project
                     mat[x + dx[i], y + dy[i]] = 1; // Créer  un chemin entre les cellules
                     chemins.X = x + dx[i];
                     chemins.Y = y + dy[i];
-                    ListChemins.Add(chemins);
 
                     mat[newX, newY] = 1;
                     chemins.X = newX;
                     chemins.Y = newY;
-                    ListChemins.Add(chemins);
                     DFS(mat, newX, newY);
                 }
             }
@@ -326,12 +355,12 @@ namespace Game_project
         {
             for (int i = 0; i < nbennemy; i++)
             {
-               // randIndex = rand.Next(0, ListChemins.Count - 1);
-                //mat[(int)ListChemins[randIndex].X, (int)ListChemins[randIndex].Y]  = 6;
+                randIndex = rand.Next(0, ListCheminsSecondaire.Count - 1);
+                mat[(int)ListCheminsSecondaire[randIndex].X, (int)ListCheminsSecondaire[randIndex].Y]  = 6;
 
-               // ListChemins.RemoveAt(randIndex);
-              //  Console.WriteLine(ListChemins.Count);
-               // ListEnnemies.Add(new Ennemies("fantomes", (int)ListChemins[randIndex].X, (int)ListChemins[randIndex].Y));
+                ListCheminsSecondaire.RemoveAt(randIndex);
+               Console.WriteLine(ListCheminsSecondaire.Count);
+                ListEnnemies.Add(new Ennemies("fantomes", (int)ListCheminsSecondaire[randIndex].X, (int)ListCheminsSecondaire[randIndex].Y));
             }
 
         }
@@ -360,7 +389,7 @@ namespace Game_project
             }
         }
 
-        private void CreateShapes()
+        private void CreerLabyrinthe()
         {
             // Efface tous les éléments existants dans le Canvas
            LabyrinthCanvas.Children.Clear();
@@ -502,7 +531,9 @@ namespace Game_project
 
                     }
                 }
+
                 solutionAffiche = false;
+                
             }
             else
             {
@@ -525,79 +556,86 @@ namespace Game_project
             }
 
 
-            CreateShapes();
+            CreerLabyrinthe();
         }
 
 
 
 
 
-        private void MovePlayerLeftRight()
+        private void DeplacerJoueur()
         {
-            Rectangle player = LabyrinthCanvas.Children.OfType<Rectangle>().FirstOrDefault(r => r.Tag.ToString() == "player");
-            double currentX = Canvas.GetLeft(player);
-            double currentY = Canvas.GetTop(player);
+            Rectangle joueur = LabyrinthCanvas.Children.OfType<Rectangle>().FirstOrDefault(r => r.Tag.ToString() == "player");
+            double positionXActuelle = Canvas.GetLeft(joueur);
+            double positionYActuelle = Canvas.GetTop(joueur);
 
-            double newX = currentX;
-            double newY = currentY;
+            double nouvellePositionX = positionXActuelle;
+            double nouvellePositionY = positionYActuelle;
 
-            if (goLeft || goRight)
-            {
-                if (goLeft)
-                {
-                    newX -= 20; //
-                }
-                else if (goRight)
-                {
-                    newX += 20;
-                }
-            }
-            else if (goUp || goDown)
-            {
-                if (goUp)
-                {
-                    newY -= 20; 
-                }
-                else if (goDown)
-                {
-                    newY += 20;
-                }
-            }
+            MetAJourNouvellesCoordonnees(ref nouvellePositionX, ref nouvellePositionY);
 
+            int indiceX = (int)(nouvellePositionX / 20);
+            int indiceY = (int)(nouvellePositionY / 20);
+            VerifierEtatPartie(indiceY, indiceX);
+            DeplacerJoueur(indiceX, indiceY, positionXActuelle, positionYActuelle);
             
-            int arrayX = (int)(newX / 20); 
-            int arrayY = (int)(newY / 20); 
+        }
 
-            if (arrayX >= 0 && arrayX < matrice.GetLength(1) && arrayY >= 0 && arrayY < matrice.GetLength(0))
+      
+        private void MetAJourNouvellesCoordonnees(ref double nouvellePositionX, ref double nouvellePositionY)
+        {
+            if (goLeft)
             {
-                if (matrice[arrayY, arrayX] == 13 || matrice[arrayY, arrayX] == 3)
+                nouvellePositionX -= 20;
+            }
+            else if (goRight)
+            {
+                nouvellePositionX += 20;
+            }
+            else if (goUp)
+            {
+                nouvellePositionY -= 20;
+            }
+            else if (goDown)
+            {
+                nouvellePositionY += 20;
+            }
+        }
+        private void VerifierEtatPartie(int indiceY, int indiceX)
+        {
+            if (matrice[indiceY, indiceX] == 13 || matrice[indiceY, indiceX] == 3)
+            {
+                aGagne = true;
+            }
+            else if (matrice[indiceY, indiceX] == 6 || matrice[indiceY, indiceX] == 16)
+            {
+                aPerdu = true;
+            }
+        }
+
+        private void DeplacerJoueur(int indiceX, int indiceY, double positionXActuelle, double positionYActuelle)
+        {
+            if (matrice[indiceY, indiceX] == 11 || matrice[indiceY, indiceX] == 1 || matrice[indiceY, indiceX] == 15 || matrice[indiceY, indiceX] == 5)
+            {
+                if (goUp || goDown || goLeft || goRight)
                 {
-                    aGagne = true;
-                }
+                    matrice[(int)(positionYActuelle / 20), (int)(positionXActuelle / 20)] = 11;
 
-                if (matrice[arrayY, arrayX] == 11 || matrice[arrayY, arrayX] == 1 || matrice[arrayY, arrayX] == 15 || matrice[arrayY, arrayX] == 5)
-                {
-                    if (goUp || goDown || goRight || goLeft)
-                    {
-                        matrice[(int)(currentY / 20), (int)(currentX / 20)] = 11;
+                    Rectangle joueur =LabyrinthCanvas.Children.OfType<Rectangle>().FirstOrDefault(r => r.Tag.ToString() == "player");
+                    Canvas.SetLeft(joueur, positionXActuelle);
+                    Canvas.SetTop(joueur, positionYActuelle);
 
-                        Canvas.SetLeft(player, newX);
-                        Canvas.SetTop(player, newY);
-
-                        matrice[arrayY, arrayX] = 4;
-                        Revelation(matrice, arrayY, arrayX);
-                        AffichageMatrice(matrice);
-                        CreateShapes();
-                    }
+                    matrice[indiceY, indiceX] = 4;
+                    Revelation(matrice, indiceY, indiceX);
+                    CreerLabyrinthe();
                 }
             }
-
-          
         }
+
 
         private void LabyrinthCanvas_Loaded(object sender, RoutedEventArgs e)
         {
-            CreateShapes();
+            CreerLabyrinthe();
         }
 
 
@@ -624,6 +662,10 @@ namespace Game_project
             {
                 ShowSolution();
             }
+            if(e.Key == Key.Escape)
+            {
+                ResetJeu();
+            }
 
         }
 
@@ -649,32 +691,84 @@ namespace Game_project
 
         private void GameEngine(object sender, EventArgs e)
         {
-            MovePlayerLeftRight();
-            CheckWin();
+            DeplacerJoueur();
+            EtatJeu();
         }
-        /* private  void  ChangeLaLuminosité()
-         {
-             foreach(Rectangle x in LabyrinthCanvas.Children.OfType<Rectangle>())
-             {
-                 if( (string)x.Tag != "player")
-                 {
-                     x.Fill = Brushes.Black;
-                 }
 
-             }
-         }
-     */
-        private void CheckWin()
+        private void EtatJeu()
         {
 
             if(aGagne)
             {
-                MessageBox.Show("Gagné !!", "Fin de partie", MessageBoxButton.OK,MessageBoxImage.Exclamation);
-                Application.Current.Shutdown();
+                MessageBox.Show("Gagné !!", "Fin de partie", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                ResetJeu();
+                aGagne = false;
+
+
+            }
+           else  if (aPerdu)
+            {
+                MessageBox.Show("Game over !", "Fin de partie", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                ResetJeu();
+                aPerdu = false;
+
+
+
             }
         }
+        private void ResetJeu()
+        {
+
+            Init init = new Init();
+            init.ShowDialog();
+            matrice = null;
+            sortieEstPlace = false;
+            goLeft = goRight = goUp = goDown = solutionAffiche = aGagne = aPerdu = false;
+            maxDistance = 0;
+            ListCheminsSecondaire.Clear();
+            ListEnnemies.Clear();
+
+            switch ((Difficulte)init.cb_diffculte.SelectedIndex)
+            {
+                case Difficulte.Facile:
+                    {
+
+                        matrice = new int[20, 20];
+                        nbEnnemies = 5;
+                        break;
+                    }
+                case Difficulte.Moyen:
+                    {
+
+                        matrice = new int[25, 25];
+                        nbEnnemies = 13;
+                        break;
+                    }
+                case Difficulte.Difficile:
+                    {
+                        matrice = new int[30, 30];
+                        nbEnnemies = 20;
+                        break;
+                    }
+
+            }
+         
+
+            CreationMatrice(matrice);
+            CreationJoueur(matrice);
+            CreationChemin(matrice);
+            CreationCheminAlternatif(matrice);
+            CreationEnnemy(matrice, nbEnnemies);
+            // lancement du timer
+            AugmenteDix(matrice);
+            CreerLabyrinthe();
+
+       
+
+        }
+
     }
-    
+
 }
        
        
