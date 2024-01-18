@@ -26,7 +26,7 @@ namespace Game_project
         private double pourcentageZeroEtDeux;
         private bool sortieEstPlace = false;
         private bool playerEstPlace = false;
-        private bool goLeft, goRight,goUp,goDown = false;
+        private bool goLeft, goRight,goUp,goDown,solutionAffiche = false;
         private bool aGagne = false;
         private double playerSpeed = 20;
         private Point Joueur = new Point();
@@ -342,7 +342,7 @@ namespace Game_project
             // Définit la portée de la révélation autour du joueur
             int portee = 1;
 
-            // Parcourir les cases autour de la position du joueur
+            // Parcour les cases autour de la position du joueur
             for (int i = joueurX - portee; i <= joueurX + portee; i++)
             {
                 for (int j = joueurY - portee; j <= joueurY + portee; j++)
@@ -350,7 +350,7 @@ namespace Game_project
                     // Vérifier si la case est à l'intérieur de la grille
                     if (i >= 0 && i < mat.GetLength(0) && j >= 0 && j < mat.GetLength(1))
                     {
-                        // Révéler la case si elle est actuellement dans l'obscurité
+                        // Révéle la case si elle est actuellement dans l'obscurité
                         if (mat[i, j] >= 10)
                         {
                             mat[i, j] -= 10;
@@ -362,14 +362,14 @@ namespace Game_project
 
         private void CreateShapes()
         {
-            // Effacer tous les éléments existants dans le Canvas
+            // Efface tous les éléments existants dans le Canvas
            LabyrinthCanvas.Children.Clear();
 
-            // Définir la largeur et la hauteur du Canvas en fonction de la taille de la matrice
+            // Définit la largeur et la hauteur du Canvas en fonction de la taille de la matrice
             LabyrinthCanvas.Width = matrice.GetLength(1) * 20;
             LabyrinthCanvas.Height = matrice.GetLength(0) * 20;
 
-            // Parcourir la matrice et créer les formes en fonction des valeurs
+            // Parcour la matrice et créer les formes en fonction des valeurs
             for (int i = 0; i < matrice.GetLength(0); i++)
             {
                 for (int j = 0; j < matrice.GetLength(1); j++)
@@ -472,11 +472,11 @@ namespace Game_project
 
                     if (shape != null)
                     {
-                        // Positionnez la forme dans le Canvas
-                        Canvas.SetLeft(shape, j * 20); // Ajustez la position X
-                        Canvas.SetTop(shape, i * 20); // Ajustez la position Y
+                        // Positionne  la forme dans le Canvas
+                        Canvas.SetLeft(shape, j * 20); // Ajuste la position X
+                        Canvas.SetTop(shape, i * 20); // Ajuste la position Y
 
-                        // Ajoutez la forme au Canvas
+                        // Ajoute la forme au Canvas
                         LabyrinthCanvas.Children.Add(shape);
 
                     }
@@ -486,113 +486,113 @@ namespace Game_project
 
         private void ShowSolution()
         {
-
-            for (int i = 0; i < matrice.GetLength(0); i++)
+            if (solutionAffiche)
             {
-                for (int j = 0; j < matrice.GetLength(1); j++)
+                for (int i = 0; i < matrice.GetLength(0); i++)
                 {
-
-                    if (matrice[i, j] < 0)
+                    for (int j = 0; j < matrice.GetLength(1); j++)
                     {
-                        matrice[i, j] += 10;
+
+                        if (matrice[i, j] < 10 && matrice[i,j] != 4)
+                        {
+                            matrice[i, j] += 10;
+                        }
+
+
+
                     }
-
-
-
                 }
+                solutionAffiche = false;
             }
+            else
+            {
+
+                for (int i = 0; i < matrice.GetLength(0); i++)
+                {
+                    for (int j = 0; j < matrice.GetLength(1); j++)
+                    {
+
+                        if (matrice[i, j] >= 10 && matrice[i, j] != 4)
+                        {
+                            matrice[i, j] -= 10;
+                        }
+
+
+
+                    }
+                }
+                solutionAffiche = true;
+            }
+
+
+            CreateShapes();
         }
 
 
 
 
 
-                private void MovePlayerLeftRight()
+        private void MovePlayerLeftRight()
         {
-            int newX = (int)Joueur.X;
-            int newY = (int)Joueur.Y;
+            Rectangle player = LabyrinthCanvas.Children.OfType<Rectangle>().FirstOrDefault(r => r.Tag.ToString() == "player");
+            double currentX = Canvas.GetLeft(player);
+            double currentY = Canvas.GetTop(player);
+
+            double newX = currentX;
+            double newY = currentY;
+
             if (goLeft || goRight)
             {
                 if (goLeft)
                 {
-                    newX -= 1;
+                    newX -= 20; //
                 }
                 else if (goRight)
                 {
-                    newX += 1;
-
+                    newX += 20;
                 }
             }
             else if (goUp || goDown)
             {
                 if (goUp)
                 {
-                    newY -= 1;
+                    newY -= 20; 
                 }
                 else if (goDown)
                 {
-                    newY += 1;
+                    newY += 20;
                 }
             }
 
+            
+            int arrayX = (int)(newX / 20); 
+            int arrayY = (int)(newY / 20); 
 
-            // Vérification des limites horizontales et verticales
-            if (newX >= 0 && newX < matrice.GetLength(1) && newY >= 0 && newY < matrice.GetLength(0))
+            if (arrayX >= 0 && arrayX < matrice.GetLength(1) && arrayY >= 0 && arrayY < matrice.GetLength(0))
             {
-
-
-                if (matrice[newY, newX] == 13 || matrice[newY, newX] == 3)
+                if (matrice[arrayY, arrayX] == 13 || matrice[arrayY, arrayX] == 3)
                 {
                     aGagne = true;
                 }
 
-                if (matrice[newY,newX] == 11 || matrice[newY, newX] == 1 || matrice[newY, newX] == 15 || matrice[newY, newX] == 5)
+                if (matrice[arrayY, arrayX] == 11 || matrice[arrayY, arrayX] == 1 || matrice[arrayY, arrayX] == 15 || matrice[arrayY, arrayX] == 5)
                 {
                     if (goUp || goDown || goRight || goLeft)
                     {
+                        matrice[(int)(currentY / 20), (int)(currentX / 20)] = 11;
 
+                        Canvas.SetLeft(player, newX);
+                        Canvas.SetTop(player, newY);
 
-
-                        matrice[(int)Joueur.Y, (int)Joueur.X] = 11;
-
-
-                        
-                        Joueur.X = newX;
-                        Joueur.Y = newY;
-                        matrice[newY, newX] = 4;
-                        Revelation(matrice, (int)Joueur.Y, (int)Joueur.X);
-
+                        matrice[arrayY, arrayX] = 4;
+                        Revelation(matrice, arrayY, arrayX);
+                        AffichageMatrice(matrice);
                         CreateShapes();
-                       
                     }
-
                 }
             }
 
-            // Mise à jour de la position sur le canvas
-            
-
-            if (goUp || goDown || goRight || goLeft)
-            {
-                Rectangle player = LabyrinthCanvas.Children.OfType<Rectangle>().FirstOrDefault(r => r.Tag.ToString() == "player");
-                Canvas.SetLeft(player, Joueur.X * 20); // Ajustement de la position horizontale
-                Canvas.SetTop(player, Joueur.Y * 20);  // Ajustement de la position verticale
-
-              ///  Console.WriteLine($"Joueur x : {Joueur.X}  y: {Joueur.Y}");
-               //Console.WriteLine($"Canvas Width: {LabyrinthCanvas.ActualWidth}, Height: {LabyrinthCanvas.ActualHeight}");
-               //Console.WriteLine(Canvas.GetLeft(player));
-               //Console.WriteLine(Canvas.GetTop(player));
-               //Canvas.SetZIndex(player, Canvas.GetZIndex(player) + 1);
-
-
-               // Console.WriteLine($"New Player Position - X: {newX}, Y: {newY}");
-
-                Console.WriteLine("---------------------------------");
-               AffichageMatrice(matrice);
-                Console.WriteLine("---------------------------------");
-              
-            }
-            
+          
         }
 
         private void LabyrinthCanvas_Loaded(object sender, RoutedEventArgs e)
@@ -619,6 +619,10 @@ namespace Game_project
             { 
                 goDown = true; 
             
+            }
+            if(e.Key == Key.F1)
+            {
+                ShowSolution();
             }
 
         }
