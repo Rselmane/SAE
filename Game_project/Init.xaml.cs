@@ -11,6 +11,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using System.Windows.Threading;
 
 namespace Game_project
 {
@@ -19,14 +20,34 @@ namespace Game_project
     /// </summary>
     public partial class Init : Window
     {
+        MediaPlayer musiqueSelection = new MediaPlayer();
+        DispatcherTimer timer = new DispatcherTimer();
         public Init()
         {
             InitializeComponent();
+            musiqueSelection.Open(new
+             Uri(AppDomain.CurrentDomain.BaseDirectory + "Sons/selection1.wav"));
+
+            // Commence la lecture
+            musiqueSelection.Play();
+            timer.Interval = TimeSpan.FromSeconds(1);  // Vérifier la position toutes les secondes
+            timer.Tick += Timer_Tick;
+            timer.Start();
+
         }
 
         private void btJouer_Click(object sender, RoutedEventArgs e)
         {
             DialogResult = true;
+            timer.Stop();
+            musiqueSelection.Stop();
+        }
+        private void Timer_Tick(object sender, EventArgs e)
+        {
+            if (musiqueSelection.Position >= TimeSpan.FromSeconds(192))  // 2 minutes et 20 secondes
+            {
+                musiqueSelection.Position = TimeSpan.FromSeconds(32);
+            }
         }
     }
 }

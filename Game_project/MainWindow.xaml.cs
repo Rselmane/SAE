@@ -51,71 +51,19 @@ namespace Game_project
         private ImageBrush tbox = new ImageBrush();
         private ImageBrush Player = new ImageBrush();
         private ImageBrush Enemies = new ImageBrush();
+        MediaPlayer musiqueJeu = new MediaPlayer();
+        DispatcherTimer timer = new DispatcherTimer();
+        private string fenetreAOuvir;
 
         public MainWindow()
         {
+
             InitializeComponent();
-            Init main = new Init();
-            main.ShowDialog();
+            fenetreAOuvir = "init";
+            OuvertureFenetre();
             LabyrinthCanvas.Focus();
             // rafraissement toutes les 16 milliseconds
-            dispatcherTimer.Tick += GameEngine;
-            dispatcherTimer.Interval = TimeSpan.FromMilliseconds(64);
-            // lancement du timer
-            dispatcherTimer.Start();
-
-            // chargement de l’image du joueur 
-            background.ImageSource = new BitmapImage(new
-            Uri(AppDomain.CurrentDomain.BaseDirectory + "Images/Background.jpg"));
-            wall.ImageSource = new BitmapImage(new
-            Uri(AppDomain.CurrentDomain.BaseDirectory + "Images/wall.jpg"));
-            murExterieur.ImageSource = new BitmapImage(new
-            Uri(AppDomain.CurrentDomain.BaseDirectory + "Images/wall2.jpg"));
-            tbox.ImageSource = new BitmapImage(new
-            Uri(AppDomain.CurrentDomain.BaseDirectory + "Images/tbox.jpg"));
-            Player.ImageSource = new BitmapImage(new
-            Uri(AppDomain.CurrentDomain.BaseDirectory + "Images/head.png"));
-            Enemies.ImageSource = new BitmapImage(new
-            Uri(AppDomain.CurrentDomain.BaseDirectory + "Images/ennemie.jpg"));
-            // assignement de skin du joueur au rectangle associé
-            this.Background = background;
-        
-
-            switch ((Difficulte)main.cb_diffculte.SelectedIndex)
-            {
-                case Difficulte.Facile:
-                    {
-
-                        matrice = new int[20,20];
-                        nbEnnemies = 10;
-                        break;
-                    }
-                case Difficulte.Moyen :
-                    {
-
-                        matrice = new int[25, 25];
-                        nbEnnemies = 15;
-                        break;
-                    }
-                case Difficulte.Difficile :
-                   {
-                        matrice = new int[30, 30];
-                        nbEnnemies = 20;
-                        break;
-                    }
-
-        }
-
-            CreationMatrice(matrice);
-            CreationJoueur(matrice);
-            CreationChemin(matrice);
-            CreationCheminAlternatif(matrice);
-            CreationEnnemy(matrice, nbEnnemies);
-            AugmenteDix(matrice);
-            //CreateShapes();
-            AffichageMatrice(matrice);
-            //ChangeLaLuminosité();
-            //Moveplayer();
+           
         }
 
         private void CreationMatrice(int[,] tab)
@@ -366,24 +314,17 @@ namespace Game_project
         }
 
 
-        private void Revelation(int[,] mat, int joueurX, int joueurY)
+        private static void Revelation(int[,] mat, int joueurX, int joueurY)
         {
-            // Définit la portée de la révélation autour du joueur
             int portee = 1;
 
-            // Parcour les cases autour de la position du joueur
-            for (int i = joueurX - portee; i <= joueurX + portee; i++)
+            for (int i = Math.Max(0, joueurX - portee); i <= Math.Min(mat.GetLength(0) - 1, joueurX + portee); i++)
             {
-                for (int j = joueurY - portee; j <= joueurY + portee; j++)
+                for (int j = Math.Max(0, joueurY - portee); j <= Math.Min(mat.GetLength(1) - 1, joueurY + portee); j++)
                 {
-                    // Vérifier si la case est à l'intérieur de la grille
-                    if (i >= 0 && i < mat.GetLength(0) && j >= 0 && j < mat.GetLength(1))
+                    if (mat[i, j] >= 10)
                     {
-                        // Révéle la case si elle est actuellement dans l'obscurité
-                        if (mat[i, j] >= 10)
-                        {
-                            mat[i, j] -= 10;
-                        }
+                        mat[i, j] -= 10;
                     }
                 }
             }
@@ -708,40 +649,111 @@ namespace Game_project
             }
            else  if (aPerdu)
             {
-                MessageBox.Show("Game over !", "Fin de partie", MessageBoxButton.OK, MessageBoxImage.Exclamation);
-                ResetJeu();
                 aPerdu = false;
-
-
-
             }
+        }
+        private void Timer_Tick(object sender, EventArgs e)
+        {
+            if (musiqueJeu.Position >= TimeSpan.FromSeconds(134))  // 2 minutes et 20 secondes
+            {
+                musiqueJeu.Position = TimeSpan.FromSeconds(1);
+            }
+        }
+        private  void ResetMusic()
+        {
+            timer.Stop();
+            musiqueJeu.Stop();
+            
+           
+        }
+        private void ResetLabyrinthe()
+        {
+            matrice = null;
+            sortieEstPlace = false;
+            background.ImageSource = null;
+            wall.ImageSource = null;
+            murExterieur.ImageSource = null;
+            tbox.ImageSource = null;
+            Player.ImageSource = null;
+            Enemies.ImageSource = null;
+            // assignement de skin du joueur au rectangle associé
+            this.Background = null;
+            maxDistance = 0;
+            matrice = null;
+
+            ListCheminsSecondaire.Clear();
+            ListEnnemies.Clear();
+            dispatcherTimer.Stop();
         }
         private void ResetJeu()
         {
+            this.Hide();
+            ResetMusic();
+            ResetLabyrinthe();
+         }
 
-            Init init = new Init();
-            init.ShowDialog();
-            matrice = null;
-            sortieEstPlace = false;
-            goLeft = goRight = goUp = goDown = solutionAffiche = aGagne = aPerdu = false;
-            maxDistance = 0;
-            ListCheminsSecondaire.Clear();
-            ListEnnemies.Clear();
+        public void OuvertureFenetre()
+        {
+            switch(fenetreAOuvir)
+            {
+                case "init":
+                   {
 
-            switch ((Difficulte)init.cb_diffculte.SelectedIndex)
+                        Init main = new Init();
+                        main.ShowDialog();
+                        CreationJeu();
+
+                        break;
+
+                    }
+                case "gameOver":
+                    {
+                        this.Hide();
+
+                        ResetJeu();
+                        GameOver gameover = new GameOver();
+                        gameover.Show();
+                        break;
+
+                    }
+                case "jeux":
+                        {
+                        CreationJeu();
+                        musiqueJeu.Open(new
+                     Uri(AppDomain.CurrentDomain.BaseDirectory + "Sons/jeu.wav"));
+
+                        // Commence la lecture
+                        musiqueJeu.Play();
+                        timer.Interval = TimeSpan.FromSeconds(1);  // Vérifier la position toutes les secondes
+                        timer.Tick += Timer_Tick;
+                        timer.Start();
+                        break;
+                    }
+            }
+        }
+        private void CreationJeu()
+        {
+            Init initWindow = (Init)Application.Current.MainWindow;
+
+            // Accessing the selected index
+            int selectedIndex = initWindow.cb_diffculte.SelectedIndex;
+
+            // Casting to Difficulte enumeration
+            Difficulte selectedDifficulty = (Difficulte)selectedIndex;
+            switch ((Difficulte) selectedIndex)
             {
                 case Difficulte.Facile:
                     {
 
                         matrice = new int[20, 20];
-                        nbEnnemies = 5;
+                        nbEnnemies = 10;
                         break;
                     }
                 case Difficulte.Moyen:
                     {
 
                         matrice = new int[25, 25];
-                        nbEnnemies = 13;
+                        nbEnnemies = 15;
                         break;
                     }
                 case Difficulte.Difficile:
@@ -752,7 +764,22 @@ namespace Game_project
                     }
 
             }
-         
+            dispatcherTimer.Start();
+            background.ImageSource = new BitmapImage(new
+           Uri(AppDomain.CurrentDomain.BaseDirectory + "Images/Background.jpg"));
+            wall.ImageSource = new BitmapImage(new
+            Uri(AppDomain.CurrentDomain.BaseDirectory + "Images/wall.jpg"));
+            murExterieur.ImageSource = new BitmapImage(new
+            Uri(AppDomain.CurrentDomain.BaseDirectory + "Images/wall2.jpg"));
+            tbox.ImageSource = new BitmapImage(new
+            Uri(AppDomain.CurrentDomain.BaseDirectory + "Images/tbox.jpg"));
+            Player.ImageSource = new BitmapImage(new
+            Uri(AppDomain.CurrentDomain.BaseDirectory + "Images/head.png"));
+            Enemies.ImageSource = new BitmapImage(new
+            Uri(AppDomain.CurrentDomain.BaseDirectory + "Images/ennemie.jpg"));
+            // assignement de skin du joueur au rectangle associé
+            this.Background = background;
+
 
             CreationMatrice(matrice);
             CreationJoueur(matrice);
@@ -762,9 +789,14 @@ namespace Game_project
             // lancement du timer
             AugmenteDix(matrice);
             CreerLabyrinthe();
+            musiqueJeu.Open(new
+         Uri(AppDomain.CurrentDomain.BaseDirectory + "Sons/jeu.wav"));
 
-       
-
+            // Commence la lecture
+            musiqueJeu.Play();
+            timer.Interval = TimeSpan.FromSeconds(1);  // Vérifier la position toutes les secondes
+            timer.Tick += Timer_Tick;
+          
         }
 
     }
