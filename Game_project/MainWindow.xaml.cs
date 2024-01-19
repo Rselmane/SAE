@@ -61,7 +61,6 @@ namespace Game_project
             InitializeComponent();
             fenetreAOuvir = "init";
             OuvertureFenetre();
-            LabyrinthCanvas.Focus();
             // rafraissement toutes les 16 milliseconds
            
         }
@@ -699,8 +698,7 @@ namespace Game_project
                 case "init":
                    {
 
-                        Init main = new Init();
-                        main.ShowDialog();
+                       
                         CreationJeu();
 
                         break;
@@ -733,14 +731,9 @@ namespace Game_project
         }
         private void CreationJeu()
         {
-            Init initWindow = (Init)Application.Current.MainWindow;
-
-            // Accessing the selected index
-            int selectedIndex = initWindow.cb_diffculte.SelectedIndex;
-
-            // Casting to Difficulte enumeration
-            Difficulte selectedDifficulty = (Difficulte)selectedIndex;
-            switch ((Difficulte) selectedIndex)
+            Init main = new Init();
+            main.ShowDialog();
+            switch ((Difficulte) main.cb_diffculte.SelectedIndex)
             {
                 case Difficulte.Facile:
                     {
@@ -779,8 +772,12 @@ namespace Game_project
             Uri(AppDomain.CurrentDomain.BaseDirectory + "Images/ennemie.jpg"));
             // assignement de skin du joueur au rectangle associé
             this.Background = background;
+            dispatcherTimer.Tick += GameEngine;
+            dispatcherTimer.Interval = TimeSpan.FromMilliseconds(64);
+            // lancement du timer
+            dispatcherTimer.Start();
 
-
+            LabyrinthCanvas.Focus();
             CreationMatrice(matrice);
             CreationJoueur(matrice);
             CreationChemin(matrice);
