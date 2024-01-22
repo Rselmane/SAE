@@ -33,7 +33,7 @@ namespace Game_project
         private int nbEnnemies;
         private double pourcentageZeroEtDeux;
         private bool sortieEstPlace = false;
-        private bool aGauche, aDroite,enHaut,enBas,solutionAffiche = false;
+        private bool aGauche, aDroite,enHaut,enBas,solutionAffiche,enPause = false;
         private bool aGagne,aPerdu = false;
         private Point Joueur = new Point();
         private Point positionLaPlusEloignee = new Point();
@@ -61,8 +61,12 @@ namespace Game_project
             InitializeComponent();
             fenetreAOuvir = "init";
             OuvertureFenetre();
+            #if DEBUG
+            Console.WriteLine("Version debug :");
+            #endif
+
             // rafraissement toutes les 16 milliseconds
-           
+
         }
 
         private void CreationMatrice(int[,] tab)
@@ -91,9 +95,9 @@ namespace Game_project
                 Joueur.Y = randX;
 
             mat[randX, randY] = 4;
-
+           #if DEBUG
             Console.WriteLine($"Player x:{positionDepart.X} y:{positionDepart.Y}\n");
-            
+           #endif
 
 
         }
@@ -122,7 +126,9 @@ namespace Game_project
             {
                 mat[(int)positionLaPlusEloignee.X, (int)positionLaPlusEloignee.Y] = 3;
                 sortieEstPlace = true;
+            #if DEBUG   
                 Console.WriteLine($"Sortie x:{positionLaPlusEloignee.X} y:{positionLaPlusEloignee.Y}");
+            #endif
             }
         }
 
@@ -306,7 +312,6 @@ namespace Game_project
                 mat[(int)ListCheminsSecondaire[randIndex].X, (int)ListCheminsSecondaire[randIndex].Y]  = 6;
 
                 ListCheminsSecondaire.RemoveAt(randIndex);
-               Console.WriteLine(ListCheminsSecondaire.Count);
                 ListEnnemies.Add(new Ennemies("fantomes", (int)ListCheminsSecondaire[randIndex].X, (int)ListCheminsSecondaire[randIndex].Y));
             }
 
@@ -357,7 +362,7 @@ namespace Game_project
                                 Tag = "murInterieur",
                                 Width = 20,
                                 Height = 20,
-                                Fill = fond
+                                Fill = imageMur
                             };
                             break;
                         case 1: // Remplacez par un rectangle blanc
@@ -375,7 +380,7 @@ namespace Game_project
                                 Tag = "MurExterieure",
                                 Width = 20,
                                 Height = 20,
-                                Fill = fond
+                                Fill = imageMur
                             };
                             break;
                         case 3: // Remplacez par un carré jaune
@@ -453,7 +458,7 @@ namespace Game_project
             }
         }
 
-        private void ShowSolution()
+        private void AfficheSolution()
         {
             if (solutionAffiche)
             {
@@ -499,6 +504,25 @@ namespace Game_project
             CreerLabyrinthe();
         }
 
+        private void PauseJeu()
+        {
+             if (enPause == false)
+            {
+                dispatcherTimer.Stop();
+                minMusqiue.Stop();
+                musiqueJeu.Pause();
+                dispatcherTimer.Tick -= MoteurJeu;
+                enPause = true;
+            }
+            else if (enPause)
+            {
+                dispatcherTimer.Start();
+                minMusqiue.Start();
+                musiqueJeu.Play();
+                dispatcherTimer.Tick += MoteurJeu;
+                enPause = false;
+            }
+        }
 
 
 
@@ -524,7 +548,7 @@ namespace Game_project
       
         private void MetAJourNouvellesCoordonnees(ref double nouvellePositionX, ref double nouvellePositionY)
         {
-            if (aGagne)
+            if (aGauche)
             {
                 nouvellePositionX -= 20;
             }
@@ -567,6 +591,9 @@ namespace Game_project
 
                     matrice[indiceY, indiceX] = 4;
                     Revelation(matrice, indiceY, indiceX);
+                   #if DEBUG
+                    AffichageMatrice(matrice);
+                   #endif
                     CreerLabyrinthe();
                 }
             }
@@ -598,14 +625,21 @@ namespace Game_project
                 enBas = true; 
             
             }
+            #if DEBUG
             if(e.Key == Key.F1)
             {
-                ShowSolution();
+                AfficheSolution();
             }
+            #endif
             if(e.Key == Key.Escape)
             {
                 RecommencerJeu();
             }
+            if (e.Key == Key.F2)
+            {
+                PauseJeu();
+            }
+
 
         }
 
@@ -656,6 +690,7 @@ namespace Game_project
                 this.Hide();
                 OuvertureFenetre();
             }
+        
         }
         private void Timer_Tick(object sender, EventArgs e)
         {
@@ -673,7 +708,7 @@ namespace Game_project
         }
         private void RecommencerLabyrinthe()
         {
-            aGauche = aDroite = enHaut = enBas= solutionAffiche = false;
+            aGauche = aDroite = enHaut = enBas= solutionAffiche = enPause = false;
             matrice = null;
             sortieEstPlace = false;
             fond.ImageSource = null;
