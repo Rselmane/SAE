@@ -54,6 +54,7 @@ namespace Game_project
         MediaPlayer musiqueJeu = new MediaPlayer();
         DispatcherTimer timer = new DispatcherTimer();
         private string fenetreAOuvir;
+        public int diffculte;
 
         public MainWindow()
         {
@@ -648,6 +649,8 @@ namespace Game_project
             }
            else  if (aPerdu)
             {
+                fenetreAOuvir = "gameOver";
+                OuvertureFenetre();
                 aPerdu = false;
             }
         }
@@ -733,7 +736,7 @@ namespace Game_project
         {
             Init main = new Init();
             main.ShowDialog();
-            switch ((Difficulte) main.cb_diffculte.SelectedIndex)
+            switch ((Difficulte)diffculte)
             {
                 case Difficulte.Facile:
                     {

@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Game_project"
         mc:Ignorable="d"
-        Title="Selection Niveau" Height="450" Width="800" ResizeMode="CanResize">
+        Title="Selection Niveau" Height="450" Width="800" ResizeMode="CanResize" Closed="Window_Closed">
     <Grid Background="Black">
         <Label Margin="-10,0,10,0">
             <Grid Height="434" Width="790">

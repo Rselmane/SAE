@@ -22,6 +22,7 @@ namespace Game_project
     {
         MediaPlayer musiqueSelection = new MediaPlayer();
         DispatcherTimer timer = new DispatcherTimer();
+        private bool jouer = false;
         public Init()
         {
             InitializeComponent();
@@ -39,14 +40,24 @@ namespace Game_project
         private void btJouer_Click(object sender, RoutedEventArgs e)
         {
             DialogResult = true;
+            jouer = true;
             timer.Stop();
             musiqueSelection.Stop();
+            ((MainWindow)Application.Current.MainWindow).diffculte = cb_diffculte.SelectedIndex; 
         }
         private void Timer_Tick(object sender, EventArgs e)
         {
             if (musiqueSelection.Position >= TimeSpan.FromSeconds(192))  // 2 minutes et 20 secondes
             {
                 musiqueSelection.Position = TimeSpan.FromSeconds(32);
+            }
+        }
+
+        private void Window_Closed(object sender, EventArgs e)
+        {
+            if (jouer == false)
+            {
+                Application.Current.Shutdown();
             }
         }
     }
