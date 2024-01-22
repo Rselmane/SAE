@@ -7,25 +7,18 @@
         mc:Ignorable="d"
         Title="Selection Niveau" Height="450" Width="800" ResizeMode="CanResize" Closed="Window_Closed">
     <Grid Background="Black">
-        <!-- Definition de lignes et colonnes -->
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
-            <!-- Pour le titre -->
             <RowDefinition Height="138*"/>
             <RowDefinition Height="73*"/>
             <RowDefinition Height="222*"/>
-            <!-- Espace central -->
             <RowDefinition Height="Auto"/>
-            <!-- Pour le choix de difficulté et le bouton -->
         </Grid.RowDefinitions>
 
-        <!-- Titre du jeu -->
         <Label x:Name="lbNomJeu" Content="Lumi-Labyrinthe" 
                HorizontalAlignment="Center" VerticalAlignment="Top"
                Foreground="White" FontSize="24" Margin="0,24,0,0"
                Grid.Row="0" Grid.RowSpan="2" />
-
-        <!-- Choix de la difficulté -->
         <Label Content="Choix Difficulté" 
                HorizontalAlignment="Center" VerticalAlignment="Top"
                Foreground="White" FontSize="24" Margin="0,138,0,0"
@@ -41,7 +34,6 @@
             <ComboBoxItem Content="Difficile"/>
         </ComboBox>
 
-        <!-- Bouton Jouer -->
         <Button x:Name="btJouer" Content="Jouer" 
                 HorizontalAlignment="Center" VerticalAlignment="Top"
                 Width="178" FontSize="20" Click="btJouer_Click"
