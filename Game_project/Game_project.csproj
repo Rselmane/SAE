@@ -5,7 +5,12 @@
     <TargetFramework>net6.0-windows</TargetFramework>
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
+    <ApplicationIcon>Cartoon_Ghost_clip_art_hight.ico</ApplicationIcon>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="Cartoon_Ghost_clip_art_hight.ico" />
+  </ItemGroup>
 
   <ItemGroup>
     <None Update="Images\Background.jpg">
