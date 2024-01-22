@@ -55,7 +55,7 @@ namespace Game_project
 
         private void Window_Closed(object sender, EventArgs e)
         {
-            if (jouer == false)
+            if (!jouer)
             {
                 Application.Current.Shutdown();
             }
