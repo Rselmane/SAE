@@ -39,8 +39,8 @@ namespace Game_project
 
         private void btJouer_Click(object sender, RoutedEventArgs e)
         {
-            DialogResult = true;
             jouer = true;
+            DialogResult = true;
             timer.Stop();
             musiqueSelection.Stop();
             ((MainWindow)Application.Current.MainWindow).diffculte = cb_diffculte.SelectedIndex; 
@@ -55,10 +55,11 @@ namespace Game_project
 
         private void Window_Closed(object sender, EventArgs e)
         {
-            if (!jouer)
+            if (jouer == false)
             {
                 Application.Current.Shutdown();
             }
+           
         }
     }
 }
