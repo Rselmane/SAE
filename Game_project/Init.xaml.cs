@@ -21,7 +21,7 @@ namespace Game_project
     public partial class Init : Window
     {
         MediaPlayer musiqueSelection = new MediaPlayer();
-        DispatcherTimer timer = new DispatcherTimer();
+        DispatcherTimer minMusique = new DispatcherTimer();
         private bool jouer = false;
         public Init()
         {
@@ -31,9 +31,9 @@ namespace Game_project
 
             // Commence la lecture
             musiqueSelection.Play();
-            timer.Interval = TimeSpan.FromSeconds(1);  // Vérifier la position toutes les secondes
-            timer.Tick += Timer_Tick;
-            timer.Start();
+            minMusique.Interval = TimeSpan.FromSeconds(1);  // Vérifier la position toutes les secondes
+            minMusique.Tick += minMusiqueTick;
+            minMusique.Start();
 
         }
 
@@ -41,11 +41,11 @@ namespace Game_project
         {
             jouer = true;
             DialogResult = true;
-            timer.Stop();
+            minMusique.Stop();
             musiqueSelection.Stop();
             ((MainWindow)Application.Current.MainWindow).diffculte = cb_diffculte.SelectedIndex; 
         }
-        private void Timer_Tick(object sender, EventArgs e)
+        private void minMusiqueTick(object sender, EventArgs e)
         {
             if (musiqueSelection.Position >= TimeSpan.FromSeconds(192))  // 2 minutes et 20 secondes
             {
@@ -64,7 +64,7 @@ namespace Game_project
 
         private void btCredit_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Developper : Rayan Selmane TD3 ", "Fin de partie", MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show("Developper : Rayan Selmane TD3 ", "Lumi-Labyrinthe", MessageBoxButton.OK, MessageBoxImage.Information);
         }
     }
 }
