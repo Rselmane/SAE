@@ -33,7 +33,7 @@ namespace Game_project
         private int nbEnnemies;
         private double pourcentageZeroEtDeux;
         private bool sortieEstPlace = false;
-        private bool goLeft, goRight,goUp,goDown,solutionAffiche = false;
+        private bool aGauche, aDroite,enHaut,enBas,solutionAffiche = false;
         private bool aGagne,aPerdu = false;
         private Point Joueur = new Point();
         private Point positionLaPlusEloignee = new Point();
@@ -45,14 +45,13 @@ namespace Game_project
         private List<Ennemies> ListEnnemies = new List<Ennemies>();
         private DispatcherTimer dispatcherTimer = new DispatcherTimer();
         // classe de pinceau d'image que nous utiliserons comme image du joueur appelée skin du joueur
-        private ImageBrush background = new ImageBrush();
-        private ImageBrush wall = new ImageBrush();
-        private ImageBrush murExterieur = new ImageBrush();
-        private ImageBrush tbox = new ImageBrush();
-        private ImageBrush Player = new ImageBrush();
-        private ImageBrush Enemies = new ImageBrush();
+        private ImageBrush fond = new ImageBrush();
+        private ImageBrush imageMur = new ImageBrush();
+        private ImageBrush imageTresore = new ImageBrush();
+        private ImageBrush imageJoueur = new ImageBrush();
+        private ImageBrush imageEnnemies = new ImageBrush();
         MediaPlayer musiqueJeu = new MediaPlayer();
-        DispatcherTimer timer = new DispatcherTimer();
+        DispatcherTimer minMusqiue = new DispatcherTimer();
         private string fenetreAOuvir;
         public int diffculte;
 
@@ -344,7 +343,7 @@ namespace Game_project
             {
                 for (int j = 0; j < matrice.GetLength(1); j++)
                 {
-                    Shape shape = null;
+                    Shape forme = null;
                     if (matrice[i, j] < 0)
                     {
                         matrice[i, j] += 10;
@@ -353,16 +352,16 @@ namespace Game_project
                     switch (matrice[i, j])
                     {
                         case 0: // Remplacez par un rectangle blanc
-                            shape = new Rectangle
+                            forme = new Rectangle
                             {
                                 Tag = "murInterieur",
                                 Width = 20,
                                 Height = 20,
-                                Fill = wall
+                                Fill = fond
                             };
                             break;
                         case 1: // Remplacez par un rectangle blanc
-                            shape = new Rectangle
+                            forme = new Rectangle
                             {
                                 Tag = "CheminPrincipal",
                                 Width = 20,
@@ -371,35 +370,35 @@ namespace Game_project
                             };
                             break;
                         case 2: // Remplacez par un rectangle noir
-                            shape = new Rectangle
+                            forme = new Rectangle
                             {
                                 Tag = "MurExterieure",
                                 Width = 20,
                                 Height = 20,
-                                Fill = murExterieur
+                                Fill = fond
                             };
                             break;
                         case 3: // Remplacez par un carré jaune
-                            shape = new Rectangle
+                            forme = new Rectangle
                             {
                                 Tag = "tresore",
                                 Width = 20,
                                 Height = 20,
-                                Fill = tbox
+                                Fill = imageTresore
                             };
                             break;
                         case 4: // Remplacez par un rectangle rouge
-                            shape = new Rectangle
+                            forme = new Rectangle
                             {
                                 Tag = "player",
                                 Width = 20,
                                 Height = 20,
-                                Fill = Player
+                                Fill = imageJoueur
                             };
                             
                             break;
                         case 5: // Remplacez par un rectangle blanc
-                            shape = new Rectangle
+                            forme = new Rectangle
                             {
                                 Tag = "cheminSecondaire",
                                 Width = 20,
@@ -408,16 +407,16 @@ namespace Game_project
                             };
                             break;
                         case 6:
-                            shape = new Rectangle()
+                            forme = new Rectangle()
                             {
                                 Tag = "Enemy",
                                 Width = 20,
                                 Height = 20,
-                                Fill = Enemies
+                                Fill = imageEnnemies
                             };
                             break;
                         case 9: // Remplacez par un rectangle blanc
-                            shape = new Rectangle
+                            forme = new Rectangle
                             {
                                 Tag = "cheminSecondaire",
                                 Width = 20,
@@ -430,7 +429,7 @@ namespace Game_project
                     }
                     if (matrice[i, j] > 9)
                     {
-                        shape = new Rectangle()
+                        forme = new Rectangle()
                         {
                             Tag = "Tenebre",
                             Width = 20,
@@ -440,14 +439,14 @@ namespace Game_project
 
                     }
 
-                    if (shape != null)
+                    if (forme != null)
                     {
                         // Positionne  la forme dans le Canvas
-                        Canvas.SetLeft(shape, j * 20); // Ajuste la position X
-                        Canvas.SetTop(shape, i * 20); // Ajuste la position Y
+                        Canvas.SetLeft(forme, j * 20); // Ajuste la position X
+                        Canvas.SetTop(forme, i * 20); // Ajuste la position Y
 
                         // Ajoute la forme au Canvas
-                        LabyrinthCanvas.Children.Add(shape);
+                        LabyrinthCanvas.Children.Add(forme);
 
                     }
                 }
@@ -525,19 +524,19 @@ namespace Game_project
       
         private void MetAJourNouvellesCoordonnees(ref double nouvellePositionX, ref double nouvellePositionY)
         {
-            if (goLeft)
+            if (aGagne)
             {
                 nouvellePositionX -= 20;
             }
-            else if (goRight)
+            else if (aDroite)
             {
                 nouvellePositionX += 20;
             }
-            else if (goUp)
+            else if (enHaut)
             {
                 nouvellePositionY -= 20;
             }
-            else if (goDown)
+            else if (enBas)
             {
                 nouvellePositionY += 20;
             }
@@ -558,7 +557,7 @@ namespace Game_project
         {
             if (matrice[indiceY, indiceX] == 11 || matrice[indiceY, indiceX] == 1 || matrice[indiceY, indiceX] == 15 || matrice[indiceY, indiceX] == 5)
             {
-                if (goUp || goDown || goLeft || goRight)
+                if (enHaut || enBas || aGauche || aDroite)
                 {
                     matrice[(int)(positionYActuelle / 20), (int)(positionXActuelle / 20)] = 11;
 
@@ -584,19 +583,19 @@ namespace Game_project
         {
             if (e.Key == Key.Left)
             {
-                goLeft = true;
+                aGauche = true;
             }
             if (e.Key == Key.Right)
             {
-                goRight = true;
+                aDroite = true;
             }
             if(e.Key == Key.Up)
             {
-                goUp = true;
+                enHaut = true;
             }
             if(e.Key==Key.Down) 
             { 
-                goDown = true; 
+                enBas = true; 
             
             }
             if(e.Key == Key.F1)
@@ -605,7 +604,7 @@ namespace Game_project
             }
             if(e.Key == Key.Escape)
             {
-                ResetJeu();
+                RecommencerJeu();
             }
 
         }
@@ -614,23 +613,23 @@ namespace Game_project
         {
             if (e.Key == Key.Left)
             {
-                goLeft = false;
+                aGauche = false;
             }
             if (e.Key == Key.Right)
             {
-                goRight = false;
+                aDroite = false;
             }
             if( e.Key == Key.Up)
             {
-                goUp = false;
+                enHaut = false;
             }
             if(e.Key == Key.Down)
             {
-                goDown = false;
+                enBas = false;
             }
         }
 
-        private void GameEngine(object sender, EventArgs e)
+        private void MoteurJeu(object sender, EventArgs e)
         {
             DeplacerJoueur();
             EtatJeu();
@@ -641,17 +640,21 @@ namespace Game_project
 
             if(aGagne)
             {
-                MessageBox.Show("Gagné !!", "Fin de partie", MessageBoxButton.OK, MessageBoxImage.Exclamation);
-                ResetJeu();
+                MessageBox.Show("Gagné !!", "Lumi-Labyrinthe", MessageBoxButton.OK, MessageBoxImage.Exclamation);
                 aGagne = false;
+                fenetreAOuvir = "init";
+                this.Hide();
+                OuvertureFenetre();
 
 
             }
            else  if (aPerdu)
             {
-                fenetreAOuvir = "gameOver";
-                OuvertureFenetre();
+                MessageBox.Show("Perdu !!", "Lumi-Labyrinthe", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                fenetreAOuvir = "rejouer";
                 aPerdu = false;
+                this.Hide();
+                OuvertureFenetre();
             }
         }
         private void Timer_Tick(object sender, EventArgs e)
@@ -661,23 +664,23 @@ namespace Game_project
                 musiqueJeu.Position = TimeSpan.FromSeconds(1);
             }
         }
-        private  void ResetMusic()
+        private  void RecommencerMusique()
         {
-            timer.Stop();
+            minMusqiue.Stop();
             musiqueJeu.Stop();
             
            
         }
-        private void ResetLabyrinthe()
+        private void RecommencerLabyrinthe()
         {
+            aGauche = aDroite = enHaut = enBas= solutionAffiche = false;
             matrice = null;
             sortieEstPlace = false;
-            background.ImageSource = null;
-            wall.ImageSource = null;
-            murExterieur.ImageSource = null;
-            tbox.ImageSource = null;
-            Player.ImageSource = null;
-            Enemies.ImageSource = null;
+            fond.ImageSource = null;
+            imageMur.ImageSource = null;
+            imageTresore.ImageSource = null;
+            imageJoueur.ImageSource = null;
+            imageEnnemies.ImageSource = null;
             // assignement de skin du joueur au rectangle associé
             this.Background = null;
             maxDistance = 0;
@@ -686,12 +689,12 @@ namespace Game_project
             ListCheminsSecondaire.Clear();
             ListEnnemies.Clear();
             dispatcherTimer.Stop();
+            dispatcherTimer.Tick -= MoteurJeu;
         }
-        private void ResetJeu()
+        private void RecommencerJeu()
         {
-            this.Hide();
-            ResetMusic();
-            ResetLabyrinthe();
+            RecommencerMusique();
+            RecommencerLabyrinthe();
          }
 
         public void OuvertureFenetre()
@@ -700,20 +703,11 @@ namespace Game_project
             {
                 case "init":
                    {
-
-                       
+                        RecommencerJeu();
+                        Init main = new Init();
+                        main.ShowDialog();
                         CreationJeu();
 
-                        break;
-
-                    }
-                case "gameOver":
-                    {
-                        this.Hide();
-
-                        ResetJeu();
-                        GameOver gameover = new GameOver();
-                        gameover.Show();
                         break;
 
                     }
@@ -725,17 +719,26 @@ namespace Game_project
 
                         // Commence la lecture
                         musiqueJeu.Play();
-                        timer.Interval = TimeSpan.FromSeconds(1);  // Vérifier la position toutes les secondes
-                        timer.Tick += Timer_Tick;
-                        timer.Start();
+                        minMusqiue.Interval = TimeSpan.FromSeconds(1);  // Vérifier la position toutes les secondes
+                        minMusqiue.Tick += Timer_Tick;
+                        minMusqiue.Start();
+                        break;
+                    }
+                case "rejouer":
+                    {
+                        RecommencerJeu();
+                        Init main = new Init();
+                        main.ShowDialog();
+                        this.Visibility = Visibility.Visible;
+                        CreationJeu();
+
+
                         break;
                     }
             }
         }
         private void CreationJeu()
         {
-            Init main = new Init();
-            main.ShowDialog();
             switch ((Difficulte)diffculte)
             {
                 case Difficulte.Facile:
@@ -748,7 +751,7 @@ namespace Game_project
                 case Difficulte.Moyen:
                     {
 
-                        matrice = new int[25, 25];
+                        matrice = new int[20, 20];
                         nbEnnemies = 15;
                         break;
                     }
@@ -761,21 +764,19 @@ namespace Game_project
 
             }
             dispatcherTimer.Start();
-            background.ImageSource = new BitmapImage(new
+            fond.ImageSource = new BitmapImage(new
            Uri(AppDomain.CurrentDomain.BaseDirectory + "Images/Background.jpg"));
-            wall.ImageSource = new BitmapImage(new
+            imageMur.ImageSource = new BitmapImage(new
             Uri(AppDomain.CurrentDomain.BaseDirectory + "Images/wall.jpg"));
-            murExterieur.ImageSource = new BitmapImage(new
-            Uri(AppDomain.CurrentDomain.BaseDirectory + "Images/wall2.jpg"));
-            tbox.ImageSource = new BitmapImage(new
+            imageTresore.ImageSource = new BitmapImage(new
             Uri(AppDomain.CurrentDomain.BaseDirectory + "Images/tbox.jpg"));
-            Player.ImageSource = new BitmapImage(new
-            Uri(AppDomain.CurrentDomain.BaseDirectory + "Images/head.png"));
-            Enemies.ImageSource = new BitmapImage(new
-            Uri(AppDomain.CurrentDomain.BaseDirectory + "Images/ennemie.jpg"));
+            imageJoueur.ImageSource = new BitmapImage(new
+            Uri(AppDomain.CurrentDomain.BaseDirectory + "Images/player.png"));
+            imageEnnemies.ImageSource = new BitmapImage(new
+            Uri(AppDomain.CurrentDomain.BaseDirectory + "Images/ennemie.png"));
             // assignement de skin du joueur au rectangle associé
-            this.Background = background;
-            dispatcherTimer.Tick += GameEngine;
+            this.Background = fond;
+            dispatcherTimer.Tick += MoteurJeu;
             dispatcherTimer.Interval = TimeSpan.FromMilliseconds(64);
             // lancement du timer
             dispatcherTimer.Start();
@@ -794,8 +795,8 @@ namespace Game_project
 
             // Commence la lecture
             musiqueJeu.Play();
-            timer.Interval = TimeSpan.FromSeconds(1);  // Vérifier la position toutes les secondes
-            timer.Tick += Timer_Tick;
+            minMusqiue.Interval = TimeSpan.FromSeconds(1);  // Vérifier la position toutes les secondes
+            minMusqiue.Tick += Timer_Tick;
           
         }
 

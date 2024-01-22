@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Game_project"
         mc:Ignorable="d"
-        Title="Selection Niveau" Height="450" Width="800" ResizeMode="CanResize" Closed="Window_Closed">
+        Title="Lumi-Labyrinthe" Height="450" Width="800" ResizeMode="CanResize" Closed="Window_Closed">
     <Grid Background="Black">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -39,5 +39,10 @@
                 Width="178" FontSize="20" Click="btJouer_Click"
                 Margin="0,112,0,0"
                 Grid.Row="3"/>
+        <Button x:Name="btCredit" Content="Credit" 
+            HorizontalAlignment="Left" VerticalAlignment="Top"
+            Width="178" FontSize="20" 
+            Margin="48,111,0,0"
+            Grid.Row="3" Click="btCredit_Click"/>
     </Grid>
 </Window>

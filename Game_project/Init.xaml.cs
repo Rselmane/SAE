@@ -61,5 +61,10 @@ namespace Game_project
             }
            
         }
+
+        private void btCredit_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show("Developper : Rayan Selmane TD3 ", "Fin de partie", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
     }
 }
