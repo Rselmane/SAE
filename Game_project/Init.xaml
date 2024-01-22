@@ -40,9 +40,9 @@
                 Margin="0,112,0,0"
                 Grid.Row="3"/>
         <Button x:Name="btCredit" Content="Credit" 
-            HorizontalAlignment="Left" VerticalAlignment="Top"
+            HorizontalAlignment="Center" VerticalAlignment="Top"
             Width="178" FontSize="20" 
-            Margin="48,111,0,0"
+           
             Grid.Row="3" Click="btCredit_Click"/>
     </Grid>
 </Window>
